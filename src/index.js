@@ -1,14 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import CountUp from 'react-countup';
 
 import PrimeiraReq from './components/FirstRequest'
+import FirstNumber from './components/FirstNumber';
 
 
 const elemento = document.getElementById('root')
 ReactDOM.render(
     <>
-    <div><CountUp end={100} /></div>
+    <div><FirstNumber /></div>
     <table>
         <thead>
             <th>ID</th>
