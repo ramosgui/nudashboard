@@ -12,10 +12,14 @@ export default class FirstNumber extends Component {
         }
     }
 
-    componentDidMount(){
+    getData() {
         axios.get('http://localhost:5000/transactions_in_month').then(response => {
             this.setState({data: response.data})
         });
+    }
+
+    componentDidMount() {
+        this.getData()
     }
 
     render () {
