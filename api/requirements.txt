@@ -1,4 +1,7 @@
-pynubank
-pytz
-pymongo
 flask
+pynubank
+pillow
+flask-cors
+pytz
+python-dateutil
+pymongo
