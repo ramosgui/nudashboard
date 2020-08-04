@@ -29,7 +29,6 @@ def get_qr_code():
 def sync():
     req = json.loads(request.data)
     nu = Nubank()
-    # nu.authenticate_with_qr_code('10264726790', 's3YVcj0VAq71', req)
     nu.authenticate_with_qr_code(req['cpf'], req['password'], req['qr_uuid'])
 
     client = MongoClient()
