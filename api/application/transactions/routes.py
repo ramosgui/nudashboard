@@ -25,10 +25,12 @@ def _format_transactions(transactions: List[TransactionModel]):
     for transaction in transactions:
         trx = {
             'id': transaction.id,
+            'refId': transaction.ref_id,
             'title': transaction.title,
             'rawTitle': transaction.raw_title,
             'titleById': transaction.title_by_id,
             'titleByMap': transaction.title_by_map,
+            'titleByRef': transaction.title_by_ref,
             'category': transaction.category,
             'rawCategory': transaction.raw_category,
             'categoryById': transaction.category_by_id,

@@ -18,10 +18,10 @@ function App() {
           </Grid>
         </Grid>
         <Grid container item xs={12} spacing={1}>
-          <Grid item xs={4} spacing={1}>
+          <Grid item xs={2} spacing={1}>
             <AggregateComponent/>
           </Grid>
-          <Grid item xs={8} spacing={1} className='testeTable'>
+          <Grid item xs={10} spacing={1} className='testeTable'>
             <TableExp/>
           </Grid>
           

@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from pymongo.database import Database
-
 from application.transactions.model import TransactionModel
+from config import MongoDatabaseConfig
 
 
 class TransactionRepository:
 
-    def __init__(self, mongodb: Database):
+    def __init__(self, mongodb: MongoDatabaseConfig):
         self._transaction_collection = mongodb.card_transactions_collections
+        self._title_ref_mapping_collection = mongodb.title_ref_mapping_collection
         self._category_mapping_collection = mongodb.category_mapping_collection
         self._title_mapping_collection = mongodb.title_mapping_collection
 
@@ -27,6 +27,12 @@ class TransactionRepository:
             return category_by_raw_trx['category']
         elif category:
             return category['category']
+
+    def _get_title_by_ref_id(self, ref_id: str):
+        if ref_id:
+            title = self._title_ref_mapping_collection.find_one({'_id': ref_id})
+            if title:
+                return title['title']
 
     def get_transactions(self, start_date: datetime, end_date: datetime):
         filters_ = {
@@ -48,6 +54,8 @@ class TransactionRepository:
             category_by_map = self._get_category_by_map(raw_category=raw_category, raw_title=raw_title,
                                                         title_by_map=title_by_map)
 
+            title_by_ref = self._get_title_by_ref_id(ref_id=trx.get('ref_id'))
+
             if trx.get('charges', 0) <= 1:
                 charges = None
                 charges_paid = None
@@ -59,7 +67,8 @@ class TransactionRepository:
                                          title_by_id=title_by_id, title_by_map=title_by_map,
                                          raw_category=raw_category, category_by_id=category_by_id,
                                          category_by_map=category_by_map, amount=trx['amount'],
-                                         charges_paid=charges_paid, charges=charges)
+                                         charges_paid=charges_paid, charges=charges, ref_id=trx.get('ref_id'),
+                                         title_by_ref=title_by_ref)
 
             transactions.append(trx_model)
 

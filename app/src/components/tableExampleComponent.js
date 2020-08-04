@@ -5,6 +5,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 import { forwardRef } from 'react';
 
+import { green } from '@material-ui/core/colors';
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import Check from '@material-ui/icons/Check';
@@ -72,6 +73,7 @@ render() {
         icons={tableIcons}
         columns={[
           { title: "ID", field: "id" },
+          { title: "Ref ID", field: "refId" },
           {
             title: "Title", 
             field: "title",
@@ -82,7 +84,8 @@ render() {
                   <div>Raw Title: {rowData.rawTitle}</div>
                   <div>{rowData.titleByMap ? "Title by Map: "+rowData.titleByMap : undefined}</div>
                   <div>{rowData.titleById ? "Title by ID: "+rowData.titleById : undefined}</div>
-                  </div>} arrow interactive>{rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }}/> : rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }}/> : <LabelOffIcon style={{ fontSize: 18 }}/>}</Tooltip>
+                  <div>{rowData.titleByRef ? "Title by REF: "+rowData.titleByRef : undefined}</div>
+                  </div>} arrow interactive>{rowData.titleByRef ? <LabelImportantIcon style={{ fontSize: 18, color: green[500] }}/> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }}/> : rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }}/> : <LabelOffIcon style={{ fontSize: 18 }}/>}</Tooltip>
               </div>
             </div>
           },
