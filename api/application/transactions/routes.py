@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, current_app, jsonify, request
 
 from application.transactions.model import TransactionModel
 from application.transactions.repository import TransactionRepository
@@ -62,3 +62,35 @@ def get_amount_by_category():
     amount_by_category = service.get_amount_by_category()
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
     return jsonify(sorted_amount_by_category), 200
+
+
+@transaction_blueprint.route('/transaction/category/update', methods=['PUT'])
+def update_transaction_category():
+    req_content = request.get_json(force=True)
+
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    service.update_trx_category(new_category=req_content['category'].strip(), trx_id=req_content['id'].strip(),
+                                type_=req_content['type'].strip())
+
+    transactions = service.get_transactions()
+    formatted_transactions = _format_transactions(transactions)
+    return jsonify(formatted_transactions), 200
+
+
+@transaction_blueprint.route('/transaction/title/update', methods=['PUT'])
+def update_transaction_title():
+    req_content = request.get_json(force=True)
+
+    print(req_content)
+
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    # service.update_trx_category(new_category=req_content['category'].strip(), trx_id=req_content['id'].strip(),
+    #                             type_=req_content['type'].strip())
+
+    transactions = service.get_transactions()
+    formatted_transactions = _format_transactions(transactions)
+    return jsonify(formatted_transactions), 200

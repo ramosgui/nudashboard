@@ -62,59 +62,141 @@ class App extends Component {
     });
   }
 
-render() {
-  return (
-    <div style={{ maxWidth: "100%" }}>
-      <MaterialTable
-        options={{
-          pageSize: 10,
-          pageSizeOptions: [10, 25, 50, 100]
-        }}
-        icons={tableIcons}
-        columns={[
-          { title: "ID", field: "id" },
-          { title: "Ref ID", field: "refId" },
-          {
-            title: "Title", 
-            field: "title",
-            render: rowData => <div>
-              <div style={{float: 'left'}}>{rowData.title} {rowData.charges ? "("+rowData.chargesPaid+"/"+rowData.charges+")" : undefined}</div>
-              <div style={{float: 'left', marginTop: '1px', marginLeft: '5px'}}><Tooltip title={
+  setData(data) {
+    console.log(data)
+  }
+
+  change(data) {
+    if (this.change_title_type) {
+      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'refId': data.refId }).then(res => {
+        const result = res.data;
+        this.setState({ data: result });
+      });
+      this.change_title_type = undefined
+    }
+
+    if (this.a) {
+      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a }).then(res => {
+        const result = res.data;
+        this.setState({ data: result });
+      });
+      this.a = undefined
+    }
+  }
+
+  render() {
+    return (
+      <div style={{ maxWidth: "100%" }}>
+        <MaterialTable
+          options={{
+            pageSize: 10,
+            pageSizeOptions: [10, 25, 50, 100]
+          }}
+          icons={tableIcons}
+          columns={[
+            //{ title: "ID", field: "id", editable: 'never' },
+            //{ title: "Ref ID", field: "refId", editable: 'never' },
+            {
+              title: "Title",
+              field: "title",
+              editComponent: props => (
                 <div>
-                  <div>Raw Title: {rowData.rawTitle}</div>
-                  <div>{rowData.titleByMap ? "Title by Map: "+rowData.titleByMap : undefined}</div>
-                  <div>{rowData.titleById ? "Title by ID: "+rowData.titleById : undefined}</div>
-                  <div>{rowData.titleByRef ? "Title by REF: "+rowData.titleByRef : undefined}</div>
-                  </div>} arrow interactive>{rowData.titleByRef ? <LabelImportantIcon style={{ fontSize: 18, color: green[500] }}/> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }}/> : rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }}/> : <LabelOffIcon style={{ fontSize: 18 }}/>}</Tooltip>
+                  <select id="type" onChange={e => this.change_title_type = e.target.value}>
+                    <option>-</option>
+                    <option value="trx">Apenas essa transação</option>
+                    <option value="same_name">Todas transações com o mesmo nome</option>
+                    <option value="charges">Todas as parcelas</option>
+                  </select>
+                  <input
+                    type="text"
+                    value={props.value}
+                    onChange={e => props.onChange(e.target.value)}
+                  /></div>
+              ),
+              render: rowData => <div>
+                <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
+                <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
+                  <div>
+                    <div>Raw Title: {rowData.rawTitle}</div>
+                    <div>{rowData.titleByMap ? "Title by Map: " + rowData.titleByMap : undefined}</div>
+                    <div>{rowData.titleById ? "Title by ID: " + rowData.titleById : undefined}</div>
+                    <div>{rowData.titleByRef ? "Title by REF: " + rowData.titleByRef : undefined}</div>
+                  </div>} arrow interactive>{rowData.titleByRef ? <LabelImportantIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
+                </div>
               </div>
-            </div>
-          },
-          //{ title: "Doğum Yılı", field: "birthYear", type: "numeric" },
-          {
-            title: "Category", 
-            field: "category",
-            render: rowData => <div>
-              <div style={{float: 'left'}}>{rowData.category}</div>
-              <div style={{float: 'left', marginTop: '1px', marginLeft: '5px'}}><Tooltip title={
+            },
+            //{ title: "Doğum Yılı", field: "birthYear", type: "numeric" },
+            {
+              title: "Category",
+              field: "category",
+              editComponent: props => (
                 <div>
-                  <div>Raw Category: {rowData.rawCategory}</div>
-                  <div>{rowData.categoryByMap ? "Category by Map: "+rowData.categoryByMap : undefined}</div>
-                  <div>{rowData.categoryById ? "Category by ID: "+rowData.categoryById : undefined}</div>
-                </div>} arrow interactive>{rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }}/> : rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }}/> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }}/>}</Tooltip>
+                  <select id="type" onChange={e => this.a = e.target.value}>
+                    <option>-</option>
+                    <option value="trx">Apenas essa transação</option>
+                    <option value="same_name">Todas transações com o mesmo nome</option>
+                  </select>
+                  <input
+                    type="text"
+                    value={props.value}
+                    onChange={e => props.onChange(e.target.value)}
+                  /></div>
+              ),
+              render: rowData => <div>
+                <div style={{ float: 'left' }}>{rowData.category}</div>
+                <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
+                  <div>
+                    <div>Raw Category: {rowData.rawCategory}</div>
+                    <div>{rowData.categoryByMap ? "Category by Map: " + rowData.categoryByMap : undefined}</div>
+                    <div>{rowData.categoryById ? "Category by ID: " + rowData.categoryById : undefined}</div>
+                  </div>} arrow interactive>{rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }} />}</Tooltip>
+                </div>
               </div>
-            </div>
-            //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
-          },
-          { title: "Amount", field: "amount" },
-          { title: "Date", field: "dt" },
-          
-        ]}
-        data={this.state.data}
-        title="Fatural Atual"
-      />
-    </div>
-  );
-}
+              //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
+            },
+            { title: "Amount", field: "amount", editable: 'never' },
+            { title: "Date", field: "dt", editable: 'never' }
+          ]}
+          data={this.state.data}
+          editable={{
+            //onRowAdd: newData =>
+            //  new Promise((resolve, reject) => {
+            //    setTimeout(() => {
+            //      this.setData([newData]);
+            //      
+            //      resolve();
+            //    }, 1000)
+            //  }),
+            onRowUpdate: (newData, oldData) =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  const dataUpdate = [...this.state.data];
+                  const index = oldData.tableData.id;
+                  dataUpdate[index] = newData;
+                  //console.log(newData)
+                  this.change(newData)
+                  //this.setState({data: [...dataUpdate]});
+
+                  resolve();
+                }, 1000)
+              }),
+            //onRowDelete: oldData =>
+            //  new Promise((resolve, reject) => {
+            //    setTimeout(() => {
+            //      const dataDelete = [...this.state.data];
+            //      const index = oldData.tableData.id;
+            //      dataDelete.splice(index, 1);
+            //      this.setData([...dataDelete]);
+            //      
+            //      resolve()
+            //    }, 1000)
+            //  }),
+          }}
+          title="Fatural Atual"
+        />
+      </div>
+    );
+  }
 }
 
 export default App;

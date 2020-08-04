@@ -17,12 +17,19 @@ class TransactionRepository:
         if title:
             return title['title']
 
-    def _get_category_by_map(self, raw_category: str, raw_title: str, title_by_map: str):
+    def _get_category_by_map(self, raw_category: str, title_by_id: str, raw_title: str, title_by_map: str,
+                             title_by_ref: str):
         category = self._category_mapping_collection.find_one({'_id': raw_category})
-        category_by_trx = self._category_mapping_collection.find_one({'_id': title_by_map})
+        category_by_map_trx = self._category_mapping_collection.find_one({'_id': title_by_map})
+        category_by_id_trx = self._category_mapping_collection.find_one({'_id': title_by_id})
         category_by_raw_trx = self._category_mapping_collection.find_one({'_id': raw_title})
-        if category_by_trx:
-            return category_by_trx['category']
+        category_by_ref_trx = self._category_mapping_collection.find_one({'_id': title_by_ref})
+        if category_by_id_trx:
+            return category_by_id_trx['category']
+        elif category_by_ref_trx:
+            return category_by_ref_trx['category']
+        elif category_by_map_trx:
+            return category_by_map_trx['category']
         elif category_by_raw_trx:
             return category_by_raw_trx['category']
         elif category:
@@ -34,6 +41,38 @@ class TransactionRepository:
             if title:
                 return title['title']
 
+    def _create_transaction_model(self, raw_trx: dict):
+        raw_title = raw_trx['title']
+        title_by_id = raw_trx.get('new_title')
+        title_by_map = self._get_title_by_map(raw_title=raw_title)
+        title_by_ref = self._get_title_by_ref_id(ref_id=raw_trx.get('ref_id'))
+
+        raw_category = raw_trx['category']
+        category_by_id = raw_trx.get('new_category')
+        category_by_map = self._get_category_by_map(raw_category=raw_category, raw_title=raw_title,
+                                                    title_by_map=title_by_map, title_by_ref=title_by_ref,
+                                                    title_by_id=title_by_id)
+
+        if raw_trx.get('charges', 0) <= 1:
+            charges = None
+            charges_paid = None
+        else:
+            charges = raw_trx['charges']
+            charges_paid = raw_trx['index'] + 1
+
+        trx_model = TransactionModel(id_=raw_trx['_id'], post_date=raw_trx['post_date'], raw_title=raw_title,
+                                     title_by_id=title_by_id, title_by_map=title_by_map,
+                                     raw_category=raw_category, category_by_id=category_by_id,
+                                     category_by_map=category_by_map, amount=raw_trx['amount'],
+                                     charges_paid=charges_paid, charges=charges, ref_id=raw_trx.get('ref_id'),
+                                     title_by_ref=title_by_ref, transactions_collection=self._transaction_collection,
+                                     category_map_collection=self._category_mapping_collection)
+        return trx_model
+
+    def get_transaction(self, trx_id: str) -> TransactionModel:
+        trx = self._transaction_collection.find_one({'_id': trx_id})
+        return self._create_transaction_model(trx)
+
     def get_transactions(self, start_date: datetime, end_date: datetime):
         filters_ = {
             'post_date': {'$gte': start_date, '$lte': end_date}
@@ -44,33 +83,7 @@ class TransactionRepository:
         for trx in result:
             if trx['title'] == 'Pagamento recebido':
                 continue
-
-            raw_title = trx['title']
-            title_by_id = trx.get('new_title')
-            title_by_map = self._get_title_by_map(raw_title=raw_title)
-
-            raw_category = trx['category']
-            category_by_id = trx.get('new_category')
-            category_by_map = self._get_category_by_map(raw_category=raw_category, raw_title=raw_title,
-                                                        title_by_map=title_by_map)
-
-            title_by_ref = self._get_title_by_ref_id(ref_id=trx.get('ref_id'))
-
-            if trx.get('charges', 0) <= 1:
-                charges = None
-                charges_paid = None
-            else:
-                charges = trx['charges']
-                charges_paid = trx['index']+1
-
-            trx_model = TransactionModel(id_=trx['_id'], post_date=trx['post_date'], raw_title=raw_title,
-                                         title_by_id=title_by_id, title_by_map=title_by_map,
-                                         raw_category=raw_category, category_by_id=category_by_id,
-                                         category_by_map=category_by_map, amount=trx['amount'],
-                                         charges_paid=charges_paid, charges=charges, ref_id=trx.get('ref_id'),
-                                         title_by_ref=title_by_ref)
-
-            transactions.append(trx_model)
+            transactions.append(self._create_transaction_model(trx))
 
         return transactions
 

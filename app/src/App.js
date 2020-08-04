@@ -10,7 +10,7 @@ import AggregateComponent from './components/aggregateComponent'
 function App() {
 
   return (
-    <Container maxWidth="4000" className='custom_container'>
+    <Container maxWidth='100%' className='custom_container'>
       <Grid container spacing={1}>
         <Grid container item xs={12} spacing={1}>
           <Grid item xs={12} spacing={1}>
