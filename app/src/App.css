@@ -1,0 +1,14 @@
+.custom_container {
+  margin-top: 10px;
+}
+body {
+  background-color: #f5f5f5;
+}
+
+thead {
+  font-weight: bold;
+}
+
+.testeTable {
+  height: 100px;
+}
