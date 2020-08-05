@@ -48,22 +48,17 @@ const tableIcons = {
 class App extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       data: []
     }
+    
   };
 
   componentWillMount() {
-    //console.log('CPF: ' + this.state.cpf, ' Password: ' + this.state.password + ' UUID: ' + this.state.uuid)
     axios.get('http://localhost:5050/transactions', {}).then(res => {
       const result = res.data;
       this.setState({ data: result });
     });
-  }
-
-  setData(data) {
-    console.log(data)
   }
 
   change(data) {
@@ -78,6 +73,7 @@ class App extends Component {
     if (this.a) {
       axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a }).then(res => {
         const result = res.data;
+        this.props.teste(result)
         this.setState({ data: result });
       });
       this.a = undefined
