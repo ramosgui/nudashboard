@@ -10,7 +10,7 @@ from application.transactions.service import TransactionService
 transaction_blueprint = Blueprint(name='transaction_blueprint', import_name='transaction_blueprint')
 
 
-def _format_amount(amount: int):
+def _format_amount(amount: float):
     # todo ficar no front end futuramente
     value = 'R$ {:,.2f}'.format(amount).strip()
     return value.replace(',', '#').replace('.', ',').replace('#', '.')
@@ -28,19 +28,18 @@ def _format_transactions(transactions: List[TransactionModel]):
             'refId': transaction.ref_id,
             'title': transaction.title,
             'rawTitle': transaction.raw_title,
-            'titleById': transaction.title_by_id,
-            'titleByMap': transaction.title_by_map,
-            'titleByRef': transaction.title_by_ref,
+            'titleById': transaction.title_by_trx_id,
+            'titleByMap': transaction.title_by_raw_title,
+            'titleByRef': transaction.title_by_ref_id,
             'category': transaction.category,
             'rawCategory': transaction.raw_category,
-            'categoryById': transaction.category_by_id,
-            'categoryByMap': transaction.category_by_map,
+            'categoryById': transaction.category_by_trx_id,
+            'categoryByMap': transaction.category_by_trx_title,
             'amount': _format_amount(transaction.amount),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
             'chargesPaid': transaction.charges_paid
         }
-
         formatted_transactions.append(trx)
     return formatted_transactions
 
@@ -60,8 +59,11 @@ def get_amount_by_category():
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
     amount_by_category = service.get_amount_by_category()
+
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
-    return jsonify(sorted_amount_by_category), 200
+    amount_by_category = [{'category': x['category'], 'value': _format_amount(x['value'])} for x in sorted_amount_by_category]
+
+    return jsonify(amount_by_category), 200
 
 
 @transaction_blueprint.route('/transaction/category/update', methods=['PUT'])
@@ -83,13 +85,11 @@ def update_transaction_category():
 def update_transaction_title():
     req_content = request.get_json(force=True)
 
-    print(req_content)
-
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
 
-    # service.update_trx_category(new_category=req_content['category'].strip(), trx_id=req_content['id'].strip(),
-    #                             type_=req_content['type'].strip())
+    service.update_trx_title(new_title=req_content['title'].strip(), trx_id=req_content['id'].strip(),
+                             type_=req_content['type'].strip())
 
     transactions = service.get_transactions()
     formatted_transactions = _format_transactions(transactions)

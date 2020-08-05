@@ -30,3 +30,16 @@ class TransactionService:
         trx.category = new_category
         trx.category_type = type_
         trx.save()
+
+    def update_trx_title(self, new_title: str, trx_id: str, type_: str):
+        """
+
+        :param new_title:
+        :param trx_id:
+        :param type_:
+        :return:
+        """
+        trx = self.get_transaction(trx_id=trx_id)
+        trx.title = new_title
+        trx.title_type = type_
+        trx.save()

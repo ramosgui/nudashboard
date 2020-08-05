@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
 
-from application.admin.routes import admin_blueprint
 from application.sync.routes import synchronize_blueprint
 from application.transactions.routes import transaction_blueprint
 from config import create_config
@@ -17,6 +16,5 @@ def create_app():
     app.register_blueprint(root_blueprint)
     app.register_blueprint(synchronize_blueprint)
     app.register_blueprint(transaction_blueprint)
-    app.register_blueprint(admin_blueprint)
 
     return app

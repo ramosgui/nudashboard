@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import axios from 'axios'
 
 export default class PersonList extends React.Component {
@@ -23,7 +23,7 @@ export default class PersonList extends React.Component {
 
     render() {
         const data = this.state.qr_code
-        const Example = ({ data }) => <img src={`data:image/jpeg;base64,${data}`} />;
+        const Example = ({ data }) => <img alt="description" src={`data:image/jpeg;base64,${data}`} />;
         return <Example data={data} />
     }
 }

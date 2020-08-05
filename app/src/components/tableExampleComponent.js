@@ -68,7 +68,7 @@ class App extends Component {
 
   change(data) {
     if (this.change_title_type) {
-      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'refId': data.refId }).then(res => {
+      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type}).then(res => {
         const result = res.data;
         this.setState({ data: result });
       });
@@ -117,12 +117,12 @@ class App extends Component {
                 <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
                 <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
                   <div>
-                    <div>Raw Title: {rowData.rawTitle}</div>
-                    <div>{rowData.titleByMap ? "Title by Map: " + rowData.titleByMap : undefined}</div>
-                    <div>{rowData.titleById ? "Title by ID: " + rowData.titleById : undefined}</div>
-                    <div>{rowData.titleByRef ? "Title by REF: " + rowData.titleByRef : undefined}</div>
-                  </div>} arrow interactive>{rowData.titleByRef ? <LabelImportantIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
-                </div>
+                    <div>Título default: {rowData.rawTitle}</div>
+                    <div>{rowData.titleByMap ? "Título pelo nome default: " + rowData.titleByMap : undefined}</div>
+                    <div>{rowData.titleByRef ? "Título de todas parcelas: " + rowData.titleByRef : undefined}</div>
+                    <div>{rowData.titleById ? "Título pelo ID: " + rowData.titleById : undefined}</div>
+                  </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} />  : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
+</div>
               </div>
             },
             //{ title: "Doğum Yılı", field: "birthYear", type: "numeric" },
@@ -146,9 +146,9 @@ class App extends Component {
                 <div style={{ float: 'left' }}>{rowData.category}</div>
                 <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
                   <div>
-                    <div>Raw Category: {rowData.rawCategory}</div>
-                    <div>{rowData.categoryByMap ? "Category by Map: " + rowData.categoryByMap : undefined}</div>
-                    <div>{rowData.categoryById ? "Category by ID: " + rowData.categoryById : undefined}</div>
+                    <div>Categoria default: {rowData.rawCategory}</div>
+                    <div>{rowData.categoryByMap ? "Categoria pela nome da transação: " + rowData.categoryByMap : undefined}</div>
+                    <div>{rowData.categoryById ? "Categoria pelo ID da transação: " + rowData.categoryById : undefined}</div>
                   </div>} arrow interactive>{rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }} />}</Tooltip>
                 </div>
               </div>

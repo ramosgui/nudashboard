@@ -4,7 +4,6 @@ import SyncModalComponent from './components/syncModalComponent';
 import TableExp from './components/tableExampleComponent';
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
 import AggregateComponent from './components/aggregateComponent'
 
 function App() {

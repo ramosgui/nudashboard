@@ -9,10 +9,6 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import ReactTooltip from "react-tooltip";
-import LabelOffIcon from '@material-ui/icons/LabelOff';
-import LabelImportantIcon from '@material-ui/icons/LabelImportant';
-import LabelIcon from '@material-ui/icons/Label';
 
 class AggregateComponent extends Component {
   constructor(props) {
