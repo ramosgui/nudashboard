@@ -45,7 +45,7 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
 };
 
-class App extends Component {
+class tableExampleComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -55,7 +55,7 @@ class App extends Component {
   };
 
   componentWillMount() {
-    axios.get('http://localhost:5050/transactions', {}).then(res => {
+    axios.get('http://localhost:5050/transactions', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
       const result = res.data;
       this.setState({ data: result });
     });
@@ -85,8 +85,14 @@ class App extends Component {
       <div style={{ maxWidth: "100%" }}>
         <MaterialTable
           options={{
+            draggable: false,
             pageSize: 10,
-            pageSizeOptions: [10, 25, 50, 100]
+            pageSizeOptions: [5, 10, 15, 25, 50, 100],
+            headerStyle: {
+              // backgroundColor: '#01579b',
+              // color: '#FFF'
+              fontWeight: 'bold'
+            }
           }}
           icons={tableIcons}
           columns={[
@@ -150,7 +156,12 @@ class App extends Component {
               </div>
               //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
             },
-            { title: "Amount", field: "amount", editable: 'never' },
+            {
+              title: "Amount", 
+              field: "amount", 
+              editable: 'never',
+              render: rowData => <div>{rowData.amount.includes('-') ? <div style={{ color: green[500] }}>{rowData.amount}</div> : rowData.amount}</div>
+            },
             { title: "Date", field: "dt", editable: 'never' }
           ]}
           data={this.state.data}
@@ -188,11 +199,11 @@ class App extends Component {
             //    }, 1000)
             //  }),
           }}
-          title="Fatural Atual"
+          title="Transações"
         />
       </div>
     );
   }
 }
 
-export default App;
+export default tableExampleComponent;

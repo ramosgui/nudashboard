@@ -1,50 +1,116 @@
-import React, { Component } from "react";
-import './App.css';
-import SyncModalComponent from './components/syncModalComponent';
-import TableExp from './components/tableExampleComponent';
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
+import React from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
+import MailIcon from '@material-ui/icons/Mail';
+import TableChartIcon from '@material-ui/icons/TableChart';
 import AggregateComponent from './components/aggregateComponent'
+import AggregateComponent2 from './components/aggregateComponent2'
+import TableExampleComponent from './components/tableExampleComponent'
+import Grid from '@material-ui/core/Grid';
 
+const drawerWidth = 240;
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+  },
+  appBar: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    backgroundColor: '#232F3E',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12);'
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0
+  },
+  drawerPaper: {
+    width: drawerWidth,
+    backgroundColor: "#1B2430",
+    borderRight: '1px solid rgba(0, 0, 0, 0.12);'
+  },
+  // necessary for content to be below app bar
+  toolbar: theme.mixins.toolbar,
+  content: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.default,
+    padding: theme.spacing(3),
+  },
+}));
 
-    this.state = {
-      data: []
-    }
+function updateState() {
 
-    
-  };
-
-  updateState = (values)=>{
-    this.setState({ data: values});
-  }
-
-  render() {
-    return (
-    <Container maxWidth='100%' className='custom_container'>
-      <Grid container spacing={1}>
-        <Grid container item xs={12} spacing={1}>
-          <Grid item xs={12} spacing={1}>
-            <SyncModalComponent />
-          </Grid>
-        </Grid>
-        <Grid container item xs={12} spacing={1}>
-          <Grid item xs={2} spacing={1}>
-            <AggregateComponent teste={this.state.data}/>
-          </Grid>
-          <Grid item xs={10} spacing={1} className='testeTable'>
-            <TableExp teste={this.updateState}/>
-          </Grid>
-
-        </Grid>
-
-
-
-      </Grid>
-    </Container>)
-  };
 }
 
+export default function PermanentDrawerLeft() {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <Typography variant="h6" noWrap>
+            Overview
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        className={classes.drawer}
+        variant="permanent"
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+        anchor="left"
+      >
+        <div className={classes.toolbar} style={{ backgroundColor: '#232F3E', color: '#EEE', textAlign: 'center', padding: '20px 0 0 30px', borderRight: '1px solid rgba(0, 0, 0, 0.12);'}}>
+          <div><TableChartIcon style={{ fontSize: '30px', float: 'left', margin: '-3px 5px 0 0'}}/></div> 
+          <div style={{ float: 'left', fontSize: '18px', fontWeight: '600'}}>NUDashboard</div>
+        </div>
+        <Divider />
+        <List style={{ color: '#EEEEEE' }}>
+          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+            <ListItem button key={text}>
+              <ListItemIcon style={{ color: '#EEEEEE' }}>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          {['All mail', 'Trash', 'Spam'].map((text, index) => (
+            <ListItem button key={text}>
+              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }}/> : <MailIcon style={{ color: '#EEEEEE' }}/>}</ListItemIcon>
+              <ListItemText style={{ color: '#EEEEEE' }} primary={text} />
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+      <main className={classes.content}>
+        <div className={classes.toolbar} />
+
+          <Grid container item xs={12} spacing={3}>
+            <Grid item xs={2} spacing={1}>
+              <AggregateComponent />
+            </Grid>
+            <Grid item xs={2} spacing={1}>
+              <AggregateComponent2 />
+            </Grid>
+            <Grid item xs={8} spacing={1}>
+              <TableExampleComponent teste={updateState}/>
+            </Grid>
+          </Grid>
+      </main>
+    </div>
+  );
+}

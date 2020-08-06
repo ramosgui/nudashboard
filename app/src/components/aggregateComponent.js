@@ -53,7 +53,7 @@ class AggregateComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.teste !== this.props.teste) {
-      axios.get('http://localhost:5050/transactions/category/amount', {}).then(res => {
+      axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
         const result = res.data;
         this.setState({ data: result })
       });
@@ -61,7 +61,7 @@ class AggregateComponent extends Component {
   }
 
   componentWillMount() {
-    axios.get('http://localhost:5050/transactions/category/amount', {}).then(res => {
+    axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
       const result = res.data;
       this.setState({ data: result })
     });
@@ -77,7 +77,12 @@ class AggregateComponent extends Component {
             search: false,
             paging: false,
             sorting: false,
-            draggable: false
+            draggable: false,
+            headerStyle: {
+              // backgroundColor: '#01579b',
+              // color: '#FFF'
+              fontWeight: 'bold'
+            }
           }}
           icons={tableIcons}
           columns={[
@@ -85,7 +90,7 @@ class AggregateComponent extends Component {
             { title: "Amount", field: "value" },
           ]}
           data={this.state.data}
-          title="Sumarização"
+          title="Mes atual"
         />
       </div>
     );

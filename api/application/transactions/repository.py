@@ -32,14 +32,12 @@ class TransactionRepository:
 
         transactions = []
         for trx in result:
-            if trx['title'] == 'Pagamento recebido':
-                continue
             transactions.append(self._create_transaction_model(trx))
 
         return transactions
 
-    def get_amount_by_category(self):
-        transactions = self.get_transactions(start_date=datetime(2020, 1, 1), end_date=datetime(2020, 10, 1))
+    def get_amount_by_category(self, start_date: datetime, end_date: datetime):
+        transactions = self.get_transactions(start_date=start_date, end_date=end_date)
         amount_by_category_list = []
         amount_by_category = {}
         for transaction in transactions:

@@ -17,13 +17,15 @@ class TransactionService:
         """
         return self._transaction_repository.get_transaction(trx_id=trx_id)
 
-    def get_transactions(self):
-        start_date = datetime(2020, 1, 1)
-        end_date = datetime(2020, 8, 30)
+    def get_transactions(self, start_date: str, end_date: str):
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
         return self._transaction_repository.get_transactions(start_date=start_date, end_date=end_date)
 
-    def get_amount_by_category(self):
-        return self._transaction_repository.get_amount_by_category()
+    def get_amount_by_category(self, start_date: str, end_date: str):
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        return self._transaction_repository.get_amount_by_category(start_date=start_date, end_date=end_date)
 
     def update_trx_category(self, new_category: str, trx_id: str, type_: str):
         trx = self.get_transaction(trx_id=trx_id)

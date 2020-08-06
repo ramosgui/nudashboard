@@ -46,9 +46,11 @@ def _format_transactions(transactions: List[TransactionModel]):
 
 @transaction_blueprint.route('/transactions', methods=['GET'])
 def get_transactions():
+    params = dict(request.args)
+
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
-    transactions = service.get_transactions()
+    transactions = service.get_transactions(start_date=params['startDate'], end_date=params['endDate'])
     formatted_transactions = _format_transactions(transactions)
 
     return jsonify(formatted_transactions), 200
@@ -56,9 +58,11 @@ def get_transactions():
 
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
 def get_amount_by_category():
+    params = dict(request.args)
+
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
-    amount_by_category = service.get_amount_by_category()
+    amount_by_category = service.get_amount_by_category(start_date=params['startDate'], end_date=params['endDate'])
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
     amount_by_category = [{'category': x['category'], 'value': _format_amount(x['value'])} for x in sorted_amount_by_category]
