@@ -80,7 +80,7 @@ def update_transaction_category():
     service.update_trx_category(new_category=req_content['category'].strip(), trx_id=req_content['id'].strip(),
                                 type_=req_content['type'].strip())
 
-    transactions = service.get_transactions()
+    transactions = service.get_transactions(start_date=req_content['startDate'], end_date=req_content['endDate'])
     formatted_transactions = _format_transactions(transactions)
     return jsonify(formatted_transactions), 200
 
@@ -95,6 +95,6 @@ def update_transaction_title():
     service.update_trx_title(new_title=req_content['title'].strip(), trx_id=req_content['id'].strip(),
                              type_=req_content['type'].strip())
 
-    transactions = service.get_transactions()
+    transactions = service.get_transactions(start_date=req_content['startDate'], end_date=req_content['endDate'])
     formatted_transactions = _format_transactions(transactions)
     return jsonify(formatted_transactions), 200

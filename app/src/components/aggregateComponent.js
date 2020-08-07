@@ -90,7 +90,7 @@ class AggregateComponent extends Component {
             { title: "Amount", field: "value" },
           ]}
           data={this.state.data}
-          title="Mes atual"
+          title="Mês atual"
         />
       </div>
     );
