@@ -5,7 +5,7 @@ export default class PersonList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            qr_code: 'qr_code',
+            qr_code: null,
             uuid: 'uuid'
         }
     }
@@ -16,14 +16,19 @@ export default class PersonList extends React.Component {
             const uuid = res.data.uuid;
             this.setState({ qr_code });
             this.setState({ uuid });
-
-            this.props.varTeste(res.data.uuid)
-        });
+            this.props.varTeste(res.data.uuid);
+        })
     }
 
     render() {
         const data = this.state.qr_code
-        const Example = ({ data }) => <img alt="description" src={`data:image/jpeg;base64,${data}`} />;
-        return <Example data={data} />
+        if (this.state.qr_code !== null) {
+            const Example = ({ data }) => <img alt="description" src={`data:image/jpeg;base64,${data}`} />;
+            return <div style={{textAlign: 'center'}}><Example data={data} /></div>
+        }
+        else {
+            return <div style={{textAlign: 'center'}}>Aguarde, carregando QRCode...</div>
+        }
+        
     }
 }

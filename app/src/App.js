@@ -25,6 +25,7 @@ import TableChartIcon from '@material-ui/icons/TableChart';
 import AggregateComponent from './components/aggregateComponent'
 import AggregateComponent2 from './components/aggregateComponent2'
 import TableExampleComponent from './components/tableExampleComponent'
+import SyncModalComponent from './components/syncModalComponent'
 
 
 const drawerWidth = 240;
@@ -180,6 +181,11 @@ export default function MiniDrawer() {
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Grid container item xs={12} spacing={3}>
+        <Grid container item xs={12} spacing={1}>
+            <Grid item xs={12} spacing={1}>
+              <SyncModalComponent />
+            </Grid>
+          </Grid>
             <Grid item xs={2} spacing={1}>
               <AggregateComponent teste={myState}/>
             </Grid>

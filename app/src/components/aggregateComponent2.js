@@ -40,7 +40,7 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
 };
 
-class AggregateComponent extends Component {
+class AggregateComponent2 extends Component {
   constructor(props) {
     super(props);
 
@@ -53,7 +53,7 @@ class AggregateComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.teste !== this.props.teste) {
-      axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
+      axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-07-01', 'endDate': '2020-07-31'}}).then(res => {
         const result = res.data;
         this.setState({ data: result })
       });
@@ -61,7 +61,7 @@ class AggregateComponent extends Component {
   }
 
   componentDidMount() {
-    axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
+    axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-07-01', 'endDate': '2020-07-31'}}).then(res => {
       const result = res.data;
       this.setState({ data: result })
     });
@@ -90,11 +90,11 @@ class AggregateComponent extends Component {
             { title: "Amount", field: "value" },
           ]}
           data={this.state.data}
-          title="Mês atual"
+          title="Mês passado"
         />
       </div>
     );
   }
 }
 
-export default AggregateComponent;
+export default AggregateComponent2;

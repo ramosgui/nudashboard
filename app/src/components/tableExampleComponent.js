@@ -54,8 +54,8 @@ class tableExampleComponent extends Component {
     
   };
 
-  componentWillMount() {
-    axios.get('http://localhost:5050/transactions', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
+  componentDidMount() {
+    axios.get('http://localhost:5050/transactions', {'params': {'startDate': '2020-07-01', 'endDate': '2020-08-30'}}).then(res => {
       const result = res.data;
       this.setState({ data: result });
     });
@@ -63,7 +63,7 @@ class tableExampleComponent extends Component {
 
   change(data) {
     if (this.change_title_type) {
-      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-08-01', 'endDate': '2020-08-30'}).then(res => {
+      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30'}).then(res => {
         const result = res.data;
         this.setState({ data: result });
       });
@@ -71,7 +71,7 @@ class tableExampleComponent extends Component {
     }
 
     if (this.a) {
-      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-08-01', 'endDate': '2020-08-30'}).then(res => {
+      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30'}).then(res => {
         const result = res.data;
         this.props.teste(result)
         this.setState({ data: result });

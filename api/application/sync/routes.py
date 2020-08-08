@@ -11,11 +11,6 @@ synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='syn
 
 
 def _format_bill_transaction(trx: dict, bill_id: str):
-    print(trx)
-
-    if trx['title'] == 'Pagamento recebido':
-        return
-
     post_date = datetime.strptime(trx['post_date'], '%Y-%m-%d')
     trx['post_date'] = post_date
     trx['_id'] = trx['id']
