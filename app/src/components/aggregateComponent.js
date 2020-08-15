@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import axios from 'axios'
 import MaterialTable from "material-table";
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 
 import { forwardRef } from 'react';
 
@@ -19,6 +21,8 @@ import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn'
+import { green } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -53,7 +57,7 @@ class AggregateComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.teste !== this.props.teste) {
-      axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
+      axios.get('http://localhost:5050/transactions/category/amount').then(res => {
         const result = res.data;
         this.setState({ data: result })
       });
@@ -61,10 +65,26 @@ class AggregateComponent extends Component {
   }
 
   componentDidMount() {
-    axios.get('http://localhost:5050/transactions/category/amount', {'params': {'startDate': '2020-08-01', 'endDate': '2020-08-30'}}).then(res => {
+    axios.get('http://localhost:5050/transactions/category/amount').then(res => {
       const result = res.data;
       this.setState({ data: result })
     });
+  }
+
+  amountPercent(percentile, value, msg) {
+    if (percentile.includes('+') === true) {
+      return <Tooltip title={<div><div>{msg}</div><div>{value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: red[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
+    }
+    else if (percentile.includes('-') === true){
+      return <Tooltip title={<div><div>{msg}</div><div>{value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: green[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
+    }
+    else if (percentile === '0.0%') {
+      return <span style={{fontSize: '10px', marginLeft: '5px'}}>({percentile})</span>
+    }
+    else {
+      return <span style={{fontSize: '10px', marginLeft: '5px', color: red[500]}}>({percentile})</span>
+    }
+
   }
 
   render() {
@@ -86,8 +106,23 @@ class AggregateComponent extends Component {
           }}
           icons={tableIcons}
           columns={[
-            { title: "Category", field: "category" },
-            { title: "Amount", field: "value" },
+            { title: "Category", field: "category", cellStyle: {
+              width: 300,
+              minWidth: 100
+              },
+              headerStyle: {
+              width: 300,
+              minWidth: 100
+              }, },
+            { 
+              title: "Amount", 
+              field: "value",
+              render: rowData => <div>
+                <span>{rowData.value}</span>
+                <span>{this.amountPercent(rowData.percentile, rowData.lastValue, "Mês passado no mesmo periodo: ")}</span>
+                <span>{this.amountPercent(rowData.percentileFull, rowData.lastFullValue, "Mês passado todo: ")}</span>
+              </div>
+            }
           ]}
           data={this.state.data}
           title="Mês atual"

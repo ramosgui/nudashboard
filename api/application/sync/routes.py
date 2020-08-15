@@ -2,6 +2,7 @@ import base64
 import json
 from datetime import datetime
 from io import BytesIO
+import time
 
 from flask import Blueprint, request, jsonify
 from pymongo import MongoClient
@@ -11,10 +12,17 @@ synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='syn
 
 
 def _format_bill_transaction(trx: dict, bill_id: str):
+    if trx['title'] == 'Pagamento recebido':
+        return
+
     post_date = datetime.strptime(trx['post_date'], '%Y-%m-%d')
     trx['post_date'] = post_date
     trx['_id'] = trx['id']
+    trx['amount'] = trx['amount'] / 100
+
     trx.pop('id')
+
+    trx['type'] = 'credit'
 
     ref_id = trx['href'].split('/')[-1]
     trx['ref_id'] = ref_id
@@ -28,6 +36,20 @@ def _format_bill_transaction(trx: dict, bill_id: str):
     if trx.get('charges') and trx['charges'] == 1:
         trx.pop('index')
         trx.pop('charges')
+
+    return trx
+
+
+def _format_account_transaction(trx: dict):
+    if trx['title'] == 'Pagamento da fatura':
+        return
+
+    trx['post_date'] = datetime.strptime(trx['postDate'], '%Y-%m-%d')
+    trx['type'] = 'account'
+    trx['_id'] = trx['id']
+    trx['category'] = trx['__typename']
+    trx.pop('__typename')
+    trx.pop('id')
 
     return trx
 
@@ -48,6 +70,8 @@ def get_qr_code():
 @synchronize_blueprint.route('/sync', methods=['POST'])
 def sync():
     req = json.loads(request.data)
+    time.sleep(1)
+
     nu = Nubank()
     nu.authenticate_with_qr_code(req['cpf'], req['password'], req['qr_uuid'])
 
@@ -69,6 +93,14 @@ def sync():
 
         open_bill_transactions = nu.get_bill_details(bill_info)['bill']['line_items']
         latest_bill_transactions = nu.get_bill_details(latest_bill)['bill']['line_items']
+        account_transactions = nu.get_account_statements()
+
+        for trx in account_transactions:
+            formatted_trx = _format_account_transaction(trx=trx)
+            try:
+                collection.insert_one(formatted_trx)
+            except Exception as e:
+                pass
 
         for trx in open_bill_transactions:
             formatted_trx = _format_bill_transaction(trx=trx, bill_id=open_bill_id)

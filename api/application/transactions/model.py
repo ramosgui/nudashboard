@@ -6,7 +6,7 @@ from pymongo.collection import Collection
 class TransactionModel:
     def __init__(self, category_map_collection: Collection, title_mapping_collection: Collection, id_: str,
                  post_date: datetime, raw_title: str, raw_category: str, charges: int, amount: float, ref_id: str,
-                 index: int):
+                 index: int, type_: str):
 
         self._category_map_collection = category_map_collection
         self._title_mapping_collection = title_mapping_collection
@@ -19,6 +19,7 @@ class TransactionModel:
         self.ref_id = ref_id
         self._amount = amount
         self.index = index
+        self.type = type_
 
         self.title_by_trx_id = None
         self.title_by_raw_title = None
@@ -89,8 +90,9 @@ class TransactionModel:
 
     @property
     def amount(self):
-        value = self._amount / 100
-        return float('%.2f' % value)
+        return self._amount
+        # value = self._amount / 100
+        # return float('%.2f' % value)
 
     @property
     def category_type(self):

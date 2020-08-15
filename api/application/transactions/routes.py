@@ -38,7 +38,8 @@ def _format_transactions(transactions: List[TransactionModel]):
             'amount': _format_amount(transaction.amount),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
-            'chargesPaid': transaction.charges_paid
+            'chargesPaid': transaction.charges_paid,
+            'type': transaction.type
         }
         formatted_transactions.append(trx)
     return formatted_transactions
@@ -58,14 +59,12 @@ def get_transactions():
 
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
 def get_amount_by_category():
-    params = dict(request.args)
-
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
-    amount_by_category = service.get_amount_by_category(start_date=params['startDate'], end_date=params['endDate'])
+    amount_by_category = service.get_amount_by_category()
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
-    amount_by_category = [{'category': x['category'], 'value': _format_amount(x['value'])} for x in sorted_amount_by_category]
+    amount_by_category = [{'category': x['category'], 'percentile': x['percent'], 'value': _format_amount(x['value']), 'lastValue': _format_amount(x['last_value']), 'percentileFull': x['percent_full'], 'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
 
     return jsonify(amount_by_category), 200
 

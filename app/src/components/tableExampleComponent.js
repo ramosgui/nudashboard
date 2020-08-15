@@ -24,6 +24,8 @@ import ViewColumn from '@material-ui/icons/ViewColumn';
 import LabelOffIcon from '@material-ui/icons/LabelOff';
 import LabelImportantIcon from '@material-ui/icons/LabelImportant';
 import LabelIcon from '@material-ui/icons/Label';
+import CreditCardIcon from '@material-ui/icons/CreditCard';
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -51,19 +53,28 @@ class tableExampleComponent extends Component {
     this.state = {
       data: []
     }
-    
+
   };
 
   componentDidMount() {
-    axios.get('http://localhost:5050/transactions', {'params': {'startDate': '2020-07-01', 'endDate': '2020-08-30'}}).then(res => {
+    axios.get('http://localhost:5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
       const result = res.data;
       this.setState({ data: result });
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.tableData !== this.props.tableData) {
+      axios.get('http://localhost:5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
+        const result = res.data;
+        this.setState({ data: result });
+      });
+    }
+  }
+
   change(data) {
     if (this.change_title_type) {
-      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30'}).then(res => {
+      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
         const result = res.data;
         this.setState({ data: result });
       });
@@ -71,7 +82,7 @@ class tableExampleComponent extends Component {
     }
 
     if (this.a) {
-      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30'}).then(res => {
+      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
         const result = res.data;
         this.props.teste(result)
         this.setState({ data: result });
@@ -80,9 +91,18 @@ class tableExampleComponent extends Component {
     }
   }
 
+  amountFunction(amount, category) {
+    if (amount.includes('-')) {
+      return <div style={{ color: green[500] }}>{amount}</div>
+    } else if (category === 'TransferInEvent') {
+      return <div style={{ color: green[500] }}>{amount}</div>
+    }
+    return amount
+  }
+
   render() {
     return (
-      <div style={{ maxWidth: "100%" }}>
+      <div>
         <MaterialTable
           options={{
             draggable: false,
@@ -96,8 +116,20 @@ class tableExampleComponent extends Component {
           }}
           icons={tableIcons}
           columns={[
-            //{ title: "ID", field: "id", editable: 'never' },
-            //{ title: "Ref ID", field: "refId", editable: 'never' },
+            {
+              title: "Type",
+              field: "type",
+              editable: 'never',
+              cellStyle: {
+                width: 50,
+                minWidth: 50
+                },
+                headerStyle: {
+                width: 50,
+                minWidth: 50
+                },
+            render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon/> : <AccountBalanceWalletIcon/>}</Tooltip>
+            },
             {
               title: "Title",
               field: "title",
@@ -123,8 +155,8 @@ class tableExampleComponent extends Component {
                     <div>{rowData.titleByMap ? "Título pelo nome default: " + rowData.titleByMap : undefined}</div>
                     <div>{rowData.titleByRef ? "Título de todas parcelas: " + rowData.titleByRef : undefined}</div>
                     <div>{rowData.titleById ? "Título pelo ID: " + rowData.titleById : undefined}</div>
-                  </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} />  : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
-</div>
+                  </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
+                </div>
               </div>
             },
             //{ title: "Doğum Yılı", field: "birthYear", type: "numeric" },
@@ -157,10 +189,10 @@ class tableExampleComponent extends Component {
               //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
             },
             {
-              title: "Amount", 
-              field: "amount", 
+              title: "Amount",
+              field: "amount",
               editable: 'never',
-              render: rowData => <div>{rowData.amount.includes('-') ? <div style={{ color: green[500] }}>{rowData.amount}</div> : rowData.amount}</div>
+              render: rowData => this.amountFunction(rowData.amount, rowData.rawCategory)
             },
             { title: "Date", field: "dt", editable: 'never' }
           ]}
@@ -183,6 +215,7 @@ class tableExampleComponent extends Component {
                   //console.log(newData)
                   this.change(newData)
                   //this.setState({data: [...dataUpdate]});
+                  this.props.openSnackBar()
 
                   resolve();
                 }, 1000)

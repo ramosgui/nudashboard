@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
+import Paper from '@material-ui/core/Paper';
 
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -11,6 +12,8 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -23,12 +26,16 @@ import MailIcon from '@material-ui/icons/Mail';
 import TableChartIcon from '@material-ui/icons/TableChart';
 
 import AggregateComponent from './components/aggregateComponent'
-import AggregateComponent2 from './components/aggregateComponent2'
 import TableExampleComponent from './components/tableExampleComponent'
 import SyncModalComponent from './components/syncModalComponent'
+import CardComponent from './components/cardComponent'
 
 
 const drawerWidth = 240;
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -103,7 +110,23 @@ export default function MiniDrawer() {
   const theme = useTheme();
 
   const [myState, setMyState] = useState(0);
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
+
+  const [tableData, setTableData] = useState(undefined);
+
+  const [openSnackBar, setSnackBar] = React.useState(false);
+
+  const handleOpenSnackBar = () => {
+    setSnackBar(true);
+  };
+
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackBar(false);
+  };
+
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -152,18 +175,18 @@ export default function MiniDrawer() {
           }),
         }}
       >
-        <div className={classes.toolbar} style={{ backgroundColor: '#232F3E', color: '#EEE', borderRight: '1px solid rgba(0, 0, 0, 0.12);'}}>
-        <div><TableChartIcon style={{ fontSize: '30px', float: 'left', margin: '-3px 5px 0 0'}}/></div> 
-        <div style={{ float: 'left', fontSize: '18px', fontWeight: '600'}}>NUDashboard</div>
+        <div className={classes.toolbar} style={{ backgroundColor: '#232F3E', color: '#EEE', borderRight: '1px solid rgba(0, 0, 0, 0.12);' }}>
+          <div><TableChartIcon style={{ fontSize: '30px', float: 'left', margin: '-3px 5px 0 0' }} /></div>
+          <div style={{ float: 'left', fontSize: '18px', fontWeight: '600' }}>NUDashboard</div>
           <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon style={{ color: '#EEEEEE' }}/> : <ChevronLeftIcon style={{ color: '#EEEEEE' }}/>}
+            {theme.direction === 'rtl' ? <ChevronRightIcon style={{ color: '#EEEEEE' }} /> : <ChevronLeftIcon style={{ color: '#EEEEEE' }} />}
           </IconButton>
         </div>
         <Divider />
         <List style={{ color: '#EEEEEE' }}>
           {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
             <ListItem button key={text}>
-              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }}/> : <MailIcon style={{ color: '#EEEEEE' }}/>}</ListItemIcon>
+              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }} /> : <MailIcon style={{ color: '#EEEEEE' }} />}</ListItemIcon>
               <ListItemText style={{ color: '#EEEEEE' }} primary={text} />
             </ListItem>
           ))}
@@ -172,7 +195,7 @@ export default function MiniDrawer() {
         <List style={{ color: '#EEEEEE' }}>
           {['All mail', 'Trash', 'Spam'].map((text, index) => (
             <ListItem button key={text}>
-              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }}/> : <MailIcon style={{ color: '#EEEEEE' }}/>}</ListItemIcon>
+              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }} /> : <MailIcon style={{ color: '#EEEEEE' }} />}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItem>
           ))}
@@ -180,22 +203,30 @@ export default function MiniDrawer() {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Grid container item xs={12} spacing={3}>
-        <Grid container item xs={12} spacing={1}>
-            <Grid item xs={12} spacing={1}>
-              <SyncModalComponent />
-            </Grid>
-          </Grid>
-            <Grid item xs={2} spacing={1}>
-              <AggregateComponent teste={myState}/>
-            </Grid>
-            <Grid item xs={2} spacing={1}>
-              <AggregateComponent2 teste={myState}/>
-            </Grid>
-            <Grid item xs={8} spacing={1}>
-              <TableExampleComponent teste={setMyState}/>
-            </Grid>
-          </Grid>
+        <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
+        <Alert onClose={handleCloseSnackBar} severity="success">
+          This is a success message!
+        </Alert>
+      </Snackbar>
+
+        <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <SyncModalComponent setTableData={setTableData} setAggregateData={setMyState} openSnackBar={handleOpenSnackBar}/>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+        <CardComponent />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+        <CardComponent />
+        </Grid>
+        <Grid item xs={6} sm={3}>
+        <AggregateComponent teste={myState} />
+        </Grid>
+        <Grid item xs={12} sm={9}>
+        <TableExampleComponent teste={setMyState} tableData={tableData} openSnackBar={handleOpenSnackBar}/>
+        </Grid>
+      </Grid>
+
       </main>
     </div>
   );

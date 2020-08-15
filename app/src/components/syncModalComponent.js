@@ -10,18 +10,37 @@ import QrCode from './qrCodeComponent';
 import useForm from '../hooks/useForm';
 import axios from 'axios'
 
-export default function FormDialog() {
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
+}));
+
+export default function FormDialog(props) {
+  const classes = useStyles();
+
   const [open, setOpen] = React.useState(false);
   const [openQrCode, setQrCode] = React.useState(false);
   const [getUuid, setUuid] = React.useState(null);
 
   const [{ values, loading }, handleChange, handleSubmit] = useForm();
 
+  const [openBackDrop, setOpenBackDrop] = React.useState(false);
+
   const enviarQr = () => {
     axios.post('http://localhost:5050/sync', { 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }).then(res => {
+      handleClose();
+      handleQrClose();
+      props.setTableData(res.data)
+      props.setAggregateData(res.data)
+      props.openSnackBar()
+      handleCloseBackDrop();
     })
-    handleClose();
-    handleQrClose();
   };
 
 
@@ -39,6 +58,14 @@ export default function FormDialog() {
 
   const handleQrClose = () => {
     setQrCode(false);
+  }
+
+  const handleToggleBackDrop = () => {
+    setOpenBackDrop(!openBackDrop);
+  }
+
+  const handleCloseBackDrop = () => {
+    setOpenBackDrop(false)
   }
 
   return (
@@ -59,7 +86,10 @@ export default function FormDialog() {
             <DialogActions>
               <form noValidate autoComplete="off" onSubmit={handleSubmit(enviarQr)}>
                 <Button onClick={() => { handleClose(); handleQrClose(); }} color="primary">Cancel</Button>
-                <Button type="submit" color="primary">{loading ? "Submitting..." : "Submit"}</Button></form>
+                <Button onClick={handleToggleBackDrop} type="submit" color="primary">{loading ? "Submitting..." : "Submit"}</Button></form>
+                <Backdrop className={classes.backdrop} open={openBackDrop} onClick={handleCloseBackDrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
             </DialogActions>
 
           </DialogContent> :
@@ -88,12 +118,11 @@ export default function FormDialog() {
               <Button onClick={() => { handleClose(); handleQrClose(); }} color="primary">Cancel</Button>
               <button onClick={handleQrOpen} color="primary">Continue</button>
             </DialogActions>
+            
           </DialogContent>
-
-
-
         }
       </Dialog>
+      
     </div>
   );
 }

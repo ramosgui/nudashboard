@@ -17,7 +17,7 @@ class TransactionRepository:
                                      charges=raw_trx.get('charges'), ref_id=raw_trx.get('ref_id'),
                                      category_map_collection=self._category_mapping_collection,
                                      title_mapping_collection=self._title_mapping_collection,
-                                     index=raw_trx.get('index'))
+                                     index=raw_trx.get('index'), type_=raw_trx['type'])
         return trx_model
 
     def get_transaction(self, trx_id: str) -> TransactionModel:
@@ -36,22 +36,16 @@ class TransactionRepository:
 
         return transactions
 
-    def get_amount_by_category(self, start_date: datetime, end_date: datetime):
+    def get_trx_amount_by_categories(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)
-        amount_by_category_list = []
         amount_by_category = {}
         for transaction in transactions:
+            if transaction.raw_category in ('TransferInEvent'):
+                continue
             value = amount_by_category.get(transaction.category, 0) + transaction.amount
-            amount_by_category[transaction.category] = value
+            amount_by_category[transaction.category] = float('%.2f' % value)
 
-        for k, v in amount_by_category.items():
-            amount_by_category_list.append({'category': k, 'value': float('%.2f' % v)})
-
-        return amount_by_category_list
-
-
-
-
+        return amount_by_category
 
 # todo em cada preço colocar icone indicando se o gasto é maior ou menor do que os mesmos da categoria
 # todo possivel alterar o title de todas as parcelas
