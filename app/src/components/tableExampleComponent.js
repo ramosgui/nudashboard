@@ -1,11 +1,18 @@
 import React, { Component } from "react";
 import axios from 'axios'
-import MaterialTable from "material-table";
+import MaterialTable, { MTableToolbar } from "material-table";
+import {MTableBodyRow} from "material-table";
+import {MTableAction} from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
 
 import { forwardRef } from 'react';
 
 import { green } from '@material-ui/core/colors';
+import { orange } from '@material-ui/core/colors';
+import { yellow } from '@material-ui/core/colors';
+import { grey } from '@material-ui/core/colors';
+import { pink } from '@material-ui/core/colors';
+
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import Check from '@material-ui/icons/Check';
@@ -26,6 +33,18 @@ import LabelImportantIcon from '@material-ui/icons/LabelImportant';
 import LabelIcon from '@material-ui/icons/Label';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
+import FastfoodOutlinedIcon from '@material-ui/icons/FastfoodOutlined';
+import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
+import PetsOutlinedIcon from '@material-ui/icons/PetsOutlined';
+import AttachMoneyOutlinedIcon from '@material-ui/icons/AttachMoneyOutlined';
+import DriveEtaOutlinedIcon from '@material-ui/icons/DriveEtaOutlined';
+import LocalMallOutlinedIcon from '@material-ui/icons/LocalMallOutlined';
+import FeaturedPlayListOutlinedIcon from '@material-ui/icons/FeaturedPlayListOutlined';
+import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
+import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
+import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
+
+import DrawerCategory from './drawerCategoryComponent'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -44,16 +63,50 @@ const tableIcons = {
   Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
   SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
   ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
+  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
+  Category: forwardRef((props, ref) => <FormatListBulletedOutlinedIcon {...props} ref={ref} />),
 };
+
+const categoryIcons = {
+  Gordices: <span className='circle' style={{borderColor: orange[500]}}><FastfoodOutlinedIcon style={{color: orange[500]}}/></span>,
+  Supermercado: <span className='circle' style={{borderColor: green[500]}}><ShoppingCartOutlinedIcon style={{color: green[500]}}/></span>,
+  Pets: <span className='circle'><PetsOutlinedIcon/></span>,
+  Carro: <span className='circle' style={{borderColor: yellow[600]}}><DriveEtaOutlinedIcon style={{color: yellow[600]}}/></span>,
+  'Outras Rendas': <span className='circle' style={{borderColor: green[600]}}><AttachMoneyOutlinedIcon style={{color: green[600]}}/></span>,
+  Compras: <span className='circle'><LocalMallOutlinedIcon/></span>,
+  Serviços: <span className='circle' style={{borderColor: grey[500]}}><FeaturedPlayListOutlinedIcon style={{color: grey[500]}}/></span>,
+  Casa: <span className='circle'><HomeOutlinedIcon/></span>,
+  Presentes: <span className='circle' style={{borderColor: pink[300]}}><CardGiftcardOutlinedIcon style={{color: pink[300]}}/></span>,
+}
+
 
 class tableExampleComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: []
+      data: [],
+      drawer: false,
+      drawerData: {}
     }
 
+  };
+
+  renderOptions(id) {
+    var a = this.state.options === id.id ? {display: 'auto'} : {display: 'none'}
+    console.log(id.title)
+    return a
+  }
+
+  toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    this.setState({drawer: open});
+  };
+
+  openDrawer(rowData) {
+    this.setState({drawer: true});
+    this.setState({drawerData: rowData})
   };
 
   componentDidMount() {
@@ -100,19 +153,36 @@ class tableExampleComponent extends Component {
     return amount
   }
 
+  testCategoryFunction(categoryName){
+    var render = null
+    var q = Object.entries(categoryIcons)
+    .map( ([key, value]) => {
+      if (categoryName === key) {
+        render = value
+      }
+    });
+      return <div><span style={{float: 'left'}}>{render}</span><span style={{float: 'left', color: 'rgba(0, 0, 0, 0.73);', marginLeft: '5px', paddingTop: '10px'}}>{categoryName}</span></div>
+    
+    
+  }
+
   render() {
     return (
       <div>
         <MaterialTable
+        localization={{
+          header : {
+             actions: ''
+          }
+        }}
           options={{
             draggable: false,
             pageSize: 10,
             pageSizeOptions: [5, 10, 15, 25, 50, 100],
             headerStyle: {
-              // backgroundColor: '#01579b',
-              // color: '#FFF'
               fontWeight: 'bold'
-            }
+            },
+            actionsColumnIndex: -1
           }}
           icons={tableIcons}
           columns={[
@@ -120,15 +190,7 @@ class tableExampleComponent extends Component {
               title: "Type",
               field: "type",
               editable: 'never',
-              cellStyle: {
-                width: 50,
-                minWidth: 50
-                },
-                headerStyle: {
-                width: 50,
-                minWidth: 50
-                },
-            render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon/> : <AccountBalanceWalletIcon/>}</Tooltip>
+              render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
             },
             {
               title: "Title",
@@ -159,7 +221,6 @@ class tableExampleComponent extends Component {
                 </div>
               </div>
             },
-            //{ title: "Doğum Yılı", field: "birthYear", type: "numeric" },
             {
               title: "Category",
               field: "category",
@@ -177,8 +238,15 @@ class tableExampleComponent extends Component {
                   /></div>
               ),
               render: rowData => <div>
-                <div style={{ float: 'left' }}>{rowData.category}</div>
-                <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
+                <div style={{ float: 'left' }}>
+
+                  {this.testCategoryFunction(rowData.category)}
+
+
+
+
+                </div>
+                <div style={{ float: 'left', marginTop: '1px', paddingTop: '10px'}}><Tooltip title={
                   <div>
                     <div>Categoria default: {rowData.rawCategory}</div>
                     <div>{rowData.categoryByMap ? "Categoria pela nome da transação: " + rowData.categoryByMap : undefined}</div>
@@ -194,46 +262,32 @@ class tableExampleComponent extends Component {
               editable: 'never',
               render: rowData => this.amountFunction(rowData.amount, rowData.rawCategory)
             },
-            { title: "Date", field: "dt", editable: 'never' }
+            { title: "Date", field: "dt", editable: 'never' },
           ]}
           data={this.state.data}
+          actions={[
+            {
+              icon: () => <FormatListBulletedOutlinedIcon/>,
+              tooltip: 'Categorizar',
+              onClick: (event, rowData) => this.openDrawer(rowData)
+            }
+          ]}
           editable={{
-            //onRowAdd: newData =>
-            //  new Promise((resolve, reject) => {
-            //    setTimeout(() => {
-            //      this.setData([newData]);
-            //      
-            //      resolve();
-            //    }, 1000)
-            //  }),
             onRowUpdate: (newData, oldData) =>
               new Promise((resolve, reject) => {
                 setTimeout(() => {
                   const dataUpdate = [...this.state.data];
                   const index = oldData.tableData.id;
                   dataUpdate[index] = newData;
-                  //console.log(newData)
                   this.change(newData)
-                  //this.setState({data: [...dataUpdate]});
                   this.props.openSnackBar()
-
                   resolve();
                 }, 1000)
-              }),
-            //onRowDelete: oldData =>
-            //  new Promise((resolve, reject) => {
-            //    setTimeout(() => {
-            //      const dataDelete = [...this.state.data];
-            //      const index = oldData.tableData.id;
-            //      dataDelete.splice(index, 1);
-            //      this.setData([...dataDelete]);
-            //      
-            //      resolve()
-            //    }, 1000)
-            //  }),
+              })
           }}
           title="Transações"
         />
+        <DrawerCategory drawerState={this.state.drawer} toggleDrawer={this.toggleDrawer} data={this.state.drawerData}/>
       </div>
     );
   }
