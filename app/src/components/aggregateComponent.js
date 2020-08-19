@@ -56,8 +56,9 @@ class AggregateComponent extends Component {
   };
 
   componentDidUpdate(prevProps) {
+    var host = window.location.hostname;
     if (prevProps.teste !== this.props.teste) {
-      axios.get('http://localhost:5050/transactions/category/amount').then(res => {
+      axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
         const result = res.data;
         this.setState({ data: result })
       });
@@ -65,11 +66,12 @@ class AggregateComponent extends Component {
   }
 
   componentDidMount() {
-    axios.get('http://localhost:5050/transactions/category/amount').then(res => {
+    var host = window.location.hostname;
+    axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
       const result = res.data;
       this.setState({ data: result })
     });
-  }
+  } 
 
   amountPercent(percentile, value, msg) {
     if (percentile.includes('+') === true) {

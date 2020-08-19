@@ -11,7 +11,8 @@ export default class PersonList extends React.Component {
     }
 
     componentDidMount() {
-        axios.get('http://localhost:5050/sync/qr_code').then(res => {
+        var host = window.location.hostname;
+        axios.get('http://'+host+':5050/sync/qr_code').then(res => {
             const qr_code = res.data.base64;
             const uuid = res.data.uuid;
             this.setState({ qr_code });

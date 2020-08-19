@@ -33,7 +33,8 @@ export default function FormDialog(props) {
   const [openBackDrop, setOpenBackDrop] = React.useState(false);
 
   const enviarQr = () => {
-    axios.post('http://localhost:5050/sync', { 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }).then(res => {
+    var host = window.location.hostname;
+    axios.post('http://'+host+':5050/sync', { 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }).then(res => {
       handleClose();
       handleQrClose();
       props.setTableData(res.data)

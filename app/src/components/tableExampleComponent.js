@@ -1,9 +1,13 @@
-import React, { Component } from "react";
+import React, { Component, useState, useEffect} from "react";
 import axios from 'axios'
 import MaterialTable, { MTableToolbar } from "material-table";
 import {MTableBodyRow} from "material-table";
 import {MTableAction} from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
+
+
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
+import Button from '@material-ui/core/Button';
 
 import { forwardRef } from 'react';
 
@@ -12,6 +16,7 @@ import { orange } from '@material-ui/core/colors';
 import { yellow } from '@material-ui/core/colors';
 import { grey } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -43,6 +48,7 @@ import FeaturedPlayListOutlinedIcon from '@material-ui/icons/FeaturedPlayListOut
 import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
 import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
+import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
 
 import DrawerCategory from './drawerCategoryComponent'
 
@@ -77,7 +83,193 @@ const categoryIcons = {
   Serviços: <span className='circle' style={{borderColor: grey[500]}}><FeaturedPlayListOutlinedIcon style={{color: grey[500]}}/></span>,
   Casa: <span className='circle'><HomeOutlinedIcon/></span>,
   Presentes: <span className='circle' style={{borderColor: pink[300]}}><CardGiftcardOutlinedIcon style={{color: pink[300]}}/></span>,
+  'Sem Categoria': <span className='circle' style={{borderColor: pink[300]}}><AccountBalanceWalletOutlinedIcon style={{color: red[500]}}/></span>,
 }
+
+const amountFunction = (amount, category) => {
+  if (amount.includes('-')) {
+    return <div style={{ color: green[500] }}>{amount}</div>
+  } else if (category === 'TransferInEvent') {
+    return <div style={{ color: green[500] }}>{amount}</div>
+  }
+  return amount
+}
+
+const testCategoryFunction = (categoryName) => {
+    var render = null
+    var q = Object.entries(categoryIcons)
+    .map( ([key, value]) => {
+      if (categoryName === key) {
+        render = value
+      }
+    });
+      return <div><span style={{float: 'left'}}>{render}</span><span style={{float: 'left', color: 'rgba(0, 0, 0, 0.73);', marginLeft: '5px', paddingTop: '10px'}}>{categoryName}</span></div>
+    
+    
+  }
+
+export default function TransactionsTableComponent(props) {
+
+  const [tableData, setTableData] = useState([]);
+  const [drawer, setDrawer] = useState(false);
+  const [drawerData, setDrawerData] = useState({});
+
+  const toggleDrawer = (open) => (event) => {
+    if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawer(open);
+  };
+
+  const openDrawer = () => {
+    setDrawer(true)
+  }
+
+  const closeDrawer = () => {
+    setDrawer(false)
+  }
+
+  const calcCategoryType = () => {
+    return true;
+  }
+
+  useEffect(() => {
+    var host = window.location.hostname;
+    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
+      setTableData(res.data)
+    });
+  });
+
+  return (
+    <div>
+      <MaterialTable
+      localization={{
+        header : {
+           actions: ''
+        }
+      }}
+        options={{
+          draggable: false,
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 15, 25, 50, 100],
+          headerStyle: {
+            fontWeight: 'bold'
+          },
+          actionsColumnIndex: -1
+        }}
+        icons={tableIcons}
+        columns={[
+          {
+            title: "Type",
+            field: "type",
+            editable: 'never',
+            render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
+          },
+          {
+            title: "Title",
+            field: "title",
+            editComponent: props => (
+              <div>
+                <select id="type" onChange={e => this.change_title_type = e.target.value}>
+                  <option>-</option>
+                  <option value="trx">Apenas essa transação</option>
+                  <option value="same_name">Todas transações com o mesmo nome</option>
+                  <option value="charges">Todas as parcelas</option>
+                </select>
+                <input
+                  type="text"
+                  value={props.value}
+                  onChange={e => props.onChange(e.target.value)}
+                /></div>
+            ),
+            render: rowData => <div>
+              <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
+              <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
+                <div>
+                  <div>Título default: {rowData.rawTitle}</div>
+                  <div>{rowData.titleByMap ? "Título pelo nome default: " + rowData.titleByMap : undefined}</div>
+                  <div>{rowData.titleByRef ? "Título de todas parcelas: " + rowData.titleByRef : undefined}</div>
+                  <div>{rowData.titleById ? "Título pelo ID: " + rowData.titleById : undefined}</div>
+                </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
+              </div>
+            </div>
+          },
+          {
+            title: "Category",
+            field: "category",
+            editComponent: props => (
+              <div>
+                <select id="type" onChange={e => this.a = e.target.value}>
+                  <option>-</option>
+                  <option value="trx">Apenas essa transação</option>
+                  <option value="same_name">Todas transações com o mesmo nome</option>
+                </select>
+                <input
+                  type="text"
+                  value={props.value}
+                  onChange={e => props.onChange(e.target.value)}
+                /></div>
+            ),
+            render: rowData => <div>
+              <div style={{ float: 'left' }}>
+
+                {testCategoryFunction(rowData.category)}
+
+
+
+
+              </div>
+              <div style={{ float: 'left', marginTop: '1px', paddingTop: '10px'}}><Tooltip title={
+                <div>
+                  <div>Categoria default: {rowData.rawCategory}</div>
+                  <div>{rowData.categoryByMap ? "Categoria pela nome da transação: " + rowData.categoryByMap : undefined}</div>
+                  <div>{rowData.categoryById ? "Categoria pelo ID da transação: " + rowData.categoryById : undefined}</div>
+                </div>} arrow interactive>{rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }} />}</Tooltip>
+              </div>
+            </div>
+            //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
+          },
+          {
+            title: "Amount",
+            field: "amount",
+            editable: 'never',
+            render: rowData => amountFunction(rowData.amount, rowData.rawCategory)
+          },
+          { title: "Date", field: "dt", editable: 'never' },
+        ]}
+        data={tableData}
+        actions={[
+          {
+            icon: () => <FormatListBulletedOutlinedIcon/>,
+            tooltip: 'Categorizar',
+            onClick: (event, rowData) => {openDrawer(); setDrawerData(rowData)}
+          }
+        ]}
+        editable={{
+          onRowUpdate: (newData, oldData) =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                const dataUpdate = [...this.state.data];
+                const index = oldData.tableData.id;
+                dataUpdate[index] = newData;
+                this.change(newData)
+                this.props.openSnackBar()
+                resolve();
+              }, 1000)
+            })
+        }}
+        title="Transações"
+      />
+      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData}/>
+    </div>
+  );
+
+
+
+}
+
+
+
 
 
 class tableExampleComponent extends Component {
@@ -91,43 +283,11 @@ class tableExampleComponent extends Component {
 
   };
 
-  renderOptions(id) {
-    var a = this.state.options === id.id ? {display: 'auto'} : {display: 'none'}
-    console.log(id.title)
-    return a
-  }
-
-  toggleDrawer = (open) => (event) => {
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return;
-    }
-    this.setState({drawer: open});
-  };
-
-  openDrawer(rowData) {
-    this.setState({drawer: true});
-    this.setState({drawerData: rowData})
-  };
-
-  componentDidMount() {
-    axios.get('http://localhost:5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
-      const result = res.data;
-      this.setState({ data: result });
-    });
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.tableData !== this.props.tableData) {
-      axios.get('http://localhost:5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
-        const result = res.data;
-        this.setState({ data: result });
-      });
-    }
-  }
 
   change(data) {
+    var host = window.location.hostname;
     if (this.change_title_type) {
-      axios.put('http://localhost:5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
+      axios.put('http://'+host+':5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
         const result = res.data;
         this.setState({ data: result });
       });
@@ -135,7 +295,8 @@ class tableExampleComponent extends Component {
     }
 
     if (this.a) {
-      axios.put('http://localhost:5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
+      var host = window.location.hostname;
+      axios.put('http://'+host+':5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
         const result = res.data;
         this.props.teste(result)
         this.setState({ data: result });
@@ -144,153 +305,4 @@ class tableExampleComponent extends Component {
     }
   }
 
-  amountFunction(amount, category) {
-    if (amount.includes('-')) {
-      return <div style={{ color: green[500] }}>{amount}</div>
-    } else if (category === 'TransferInEvent') {
-      return <div style={{ color: green[500] }}>{amount}</div>
-    }
-    return amount
-  }
-
-  testCategoryFunction(categoryName){
-    var render = null
-    var q = Object.entries(categoryIcons)
-    .map( ([key, value]) => {
-      if (categoryName === key) {
-        render = value
-      }
-    });
-      return <div><span style={{float: 'left'}}>{render}</span><span style={{float: 'left', color: 'rgba(0, 0, 0, 0.73);', marginLeft: '5px', paddingTop: '10px'}}>{categoryName}</span></div>
-    
-    
-  }
-
-  render() {
-    return (
-      <div>
-        <MaterialTable
-        localization={{
-          header : {
-             actions: ''
-          }
-        }}
-          options={{
-            draggable: false,
-            pageSize: 10,
-            pageSizeOptions: [5, 10, 15, 25, 50, 100],
-            headerStyle: {
-              fontWeight: 'bold'
-            },
-            actionsColumnIndex: -1
-          }}
-          icons={tableIcons}
-          columns={[
-            {
-              title: "Type",
-              field: "type",
-              editable: 'never',
-              render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
-            },
-            {
-              title: "Title",
-              field: "title",
-              editComponent: props => (
-                <div>
-                  <select id="type" onChange={e => this.change_title_type = e.target.value}>
-                    <option>-</option>
-                    <option value="trx">Apenas essa transação</option>
-                    <option value="same_name">Todas transações com o mesmo nome</option>
-                    <option value="charges">Todas as parcelas</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={props.value}
-                    onChange={e => props.onChange(e.target.value)}
-                  /></div>
-              ),
-              render: rowData => <div>
-                <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
-                <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
-                  <div>
-                    <div>Título default: {rowData.rawTitle}</div>
-                    <div>{rowData.titleByMap ? "Título pelo nome default: " + rowData.titleByMap : undefined}</div>
-                    <div>{rowData.titleByRef ? "Título de todas parcelas: " + rowData.titleByRef : undefined}</div>
-                    <div>{rowData.titleById ? "Título pelo ID: " + rowData.titleById : undefined}</div>
-                  </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
-                </div>
-              </div>
-            },
-            {
-              title: "Category",
-              field: "category",
-              editComponent: props => (
-                <div>
-                  <select id="type" onChange={e => this.a = e.target.value}>
-                    <option>-</option>
-                    <option value="trx">Apenas essa transação</option>
-                    <option value="same_name">Todas transações com o mesmo nome</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={props.value}
-                    onChange={e => props.onChange(e.target.value)}
-                  /></div>
-              ),
-              render: rowData => <div>
-                <div style={{ float: 'left' }}>
-
-                  {this.testCategoryFunction(rowData.category)}
-
-
-
-
-                </div>
-                <div style={{ float: 'left', marginTop: '1px', paddingTop: '10px'}}><Tooltip title={
-                  <div>
-                    <div>Categoria default: {rowData.rawCategory}</div>
-                    <div>{rowData.categoryByMap ? "Categoria pela nome da transação: " + rowData.categoryByMap : undefined}</div>
-                    <div>{rowData.categoryById ? "Categoria pelo ID da transação: " + rowData.categoryById : undefined}</div>
-                  </div>} arrow interactive>{rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }} />}</Tooltip>
-                </div>
-              </div>
-              //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
-            },
-            {
-              title: "Amount",
-              field: "amount",
-              editable: 'never',
-              render: rowData => this.amountFunction(rowData.amount, rowData.rawCategory)
-            },
-            { title: "Date", field: "dt", editable: 'never' },
-          ]}
-          data={this.state.data}
-          actions={[
-            {
-              icon: () => <FormatListBulletedOutlinedIcon/>,
-              tooltip: 'Categorizar',
-              onClick: (event, rowData) => this.openDrawer(rowData)
-            }
-          ]}
-          editable={{
-            onRowUpdate: (newData, oldData) =>
-              new Promise((resolve, reject) => {
-                setTimeout(() => {
-                  const dataUpdate = [...this.state.data];
-                  const index = oldData.tableData.id;
-                  dataUpdate[index] = newData;
-                  this.change(newData)
-                  this.props.openSnackBar()
-                  resolve();
-                }, 1000)
-              })
-          }}
-          title="Transações"
-        />
-        <DrawerCategory drawerState={this.state.drawer} toggleDrawer={this.toggleDrawer} data={this.state.drawerData}/>
-      </div>
-    );
-  }
 }
-
-export default tableExampleComponent;
