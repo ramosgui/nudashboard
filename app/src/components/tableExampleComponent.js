@@ -140,7 +140,6 @@ export default function TransactionsTableComponent(props) {
         this.setState({ data: result });
       });
     }
-  }
 
   useEffect(() => {
     var host = window.location.hostname;
