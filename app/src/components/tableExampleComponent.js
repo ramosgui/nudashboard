@@ -133,12 +133,21 @@ export default function TransactionsTableComponent(props) {
     return true;
   }
 
+  const change = (data) => {
+    var host = window.location.hostname;
+      axios.put('http://'+host+':5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
+        const result = res.data;
+        this.setState({ data: result });
+      });
+    }
+  }
+
   useEffect(() => {
     var host = window.location.hostname;
     axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
       setTableData(res.data)
     });
-  });
+  }, [drawer])
 
   return (
     <div>
@@ -260,7 +269,7 @@ export default function TransactionsTableComponent(props) {
         }}
         title="Transações"
       />
-      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData}/>
+      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType}drawerData={drawerData}/>
     </div>
   );
 

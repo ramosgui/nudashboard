@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -109,23 +110,28 @@ export default function TemporaryDrawer(props) {
     setUseCategory(!useCategory)
   }
 
-  const updateCategory = () => {
-    console.log('updateCategory')
-    props.closeDrawer()
-  };
+  const updateCategory = (category) => {
 
-  useEffect(() => {
-    if (props.drawerData.categoryByMap === null) {
-      setUseCategory(false)
-    } else {
-      setUseCategory(true)
+    if (category === 'Sem Categoria') {
+      category = ''
     }
-  }, [props.drawerData])
+
+    var type = undefined
+    if (useCategory === true) {
+      type = 'same_name'
+    } else {
+      type = 'trx'
+    }
+    var host = window.location.hostname;
+      axios.put('http://'+host+':5050/transaction/category/update', { 'id': props.drawerData.id, 'category': category, 'type': type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
+        props.closeDrawer()
+      });
+  };
 
   return (
     <div>
 
-        <Drawer anchor='right' open={props.drawerState}>
+        <Drawer anchor='right' open={props.drawerState} onClose={props.closeDrawer}>
           <div
             className={clsx(classes.list)}
             role="presentation"
@@ -135,9 +141,9 @@ export default function TemporaryDrawer(props) {
               onChange={handleCategory}
               name="checkedB"
               color="primary"
-            />Sempre usar essa categoria
+            />Sempre usar essa categoria (Sempre que tiver uma transação com esse nome, essa categoria já vai ser escolhida.)
       {Object.entries(categoryIcons).map(([k, v]) => (
-              <ListItem button key={k} onClick={() => { updateCategory() }}>
+              <ListItem button key={k} onClick={() => { updateCategory(k) }}>
                 <ListItemIcon>{v}</ListItemIcon>
                 <ListItemText primary={k} />
               </ListItem>
