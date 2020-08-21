@@ -1,13 +1,8 @@
 import React, { Component, useState, useEffect} from "react";
 import axios from 'axios'
 import MaterialTable, { MTableToolbar } from "material-table";
-import {MTableBodyRow} from "material-table";
-import {MTableAction} from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
 
-
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
-import Button from '@material-ui/core/Button';
 
 import { forwardRef } from 'react';
 
@@ -17,6 +12,7 @@ import { yellow } from '@material-ui/core/colors';
 import { grey } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
 import { red } from '@material-ui/core/colors';
+import { blue } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -49,8 +45,15 @@ import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
 import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
 import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
+import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
+import BeachAccessOutlinedIcon from '@material-ui/icons/BeachAccessOutlined';
+import EditIcon from '@material-ui/icons/Edit';
+import BlockIcon from '@material-ui/icons/Block';
 
 import DrawerCategory from './drawerCategoryComponent'
+import DrawerEditTransaction from './drawerEditComponent'
+
+
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -75,14 +78,17 @@ const tableIcons = {
 
 const categoryIcons = {
   Gordices: <span className='circle' style={{borderColor: orange[500]}}><FastfoodOutlinedIcon style={{color: orange[500]}}/></span>,
-  Supermercado: <span className='circle' style={{borderColor: green[500]}}><ShoppingCartOutlinedIcon style={{color: green[500]}}/></span>,
+  Supermercado: <span className='circle' style={{borderColor: orange[500]}}><ShoppingCartOutlinedIcon style={{color: orange[500]}}/></span>,
   Pets: <span className='circle'><PetsOutlinedIcon/></span>,
   Carro: <span className='circle' style={{borderColor: yellow[600]}}><DriveEtaOutlinedIcon style={{color: yellow[600]}}/></span>,
   'Outras Rendas': <span className='circle' style={{borderColor: green[600]}}><AttachMoneyOutlinedIcon style={{color: green[600]}}/></span>,
+  Remuneração: <span className='circle' style={{ borderColor: green[600] }}><AccountBalanceWalletOutlinedIcon style={{ color: green[600] }} /></span>,
+  Lazer: <span className='circle' style={{ borderColor: blue[600] }}><BeachAccessOutlinedIcon style={{ color: blue[600] }} /></span>,
   Compras: <span className='circle'><LocalMallOutlinedIcon/></span>,
   Serviços: <span className='circle' style={{borderColor: grey[500]}}><FeaturedPlayListOutlinedIcon style={{color: grey[500]}}/></span>,
   Casa: <span className='circle'><HomeOutlinedIcon/></span>,
   Presentes: <span className='circle' style={{borderColor: pink[300]}}><CardGiftcardOutlinedIcon style={{color: pink[300]}}/></span>,
+  Outros: <span className='circle' style={{ borderColor: green[300] }}><LocalOfferOutlinedIcon style={{ color: green[300] }} /></span>,
   'Sem Categoria': <span className='circle' style={{borderColor: pink[300]}}><AccountBalanceWalletOutlinedIcon style={{color: red[500]}}/></span>,
 }
 
@@ -113,6 +119,22 @@ export default function TransactionsTableComponent(props) {
   const [tableData, setTableData] = useState([]);
   const [drawer, setDrawer] = useState(false);
   const [drawerData, setDrawerData] = useState({});
+  const [editDrawer, setEditDrawer] = useState(false);
+
+  const openEditDrawer = () => {
+    setEditDrawer(true)
+  }
+
+  const closeEditDrawer = () => {
+    setEditDrawer(false)
+  }
+
+  const toggleEditDrawer = (open) => (event) => {
+    if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setEditDrawer(open);
+  };
 
   const toggleDrawer = (open) => (event) => {
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -133,20 +155,13 @@ export default function TransactionsTableComponent(props) {
     return true;
   }
 
-  const change = (data) => {
-    var host = window.location.hostname;
-      axios.put('http://'+host+':5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
-        const result = res.data;
-        this.setState({ data: result });
-      });
-    }
-
   useEffect(() => {
     var host = window.location.hostname;
     axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
       setTableData(res.data)
+      props.setUpdateTableData(res.data)
     });
-  }, [drawer])
+  }, [drawer, editDrawer])
 
   return (
     <div>
@@ -251,24 +266,35 @@ export default function TransactionsTableComponent(props) {
             icon: () => <FormatListBulletedOutlinedIcon/>,
             tooltip: 'Categorizar',
             onClick: (event, rowData) => {openDrawer(); setDrawerData(rowData)}
+          },
+          {
+            icon: () => <EditIcon/>,
+            tooltip: 'Editar',
+            onClick: (event, rowData) => {openEditDrawer(); setDrawerData(rowData)}
+          },
+          {
+            icon: () => <BlockIcon/>,
+            tooltip: 'Ignorar',
+            onClick: (event, rowData) => alert('Not implemented')
           }
         ]}
-        editable={{
-          onRowUpdate: (newData, oldData) =>
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                const dataUpdate = [...this.state.data];
-                const index = oldData.tableData.id;
-                dataUpdate[index] = newData;
-                this.change(newData)
-                this.props.openSnackBar()
-                resolve();
-              }, 1000)
-            })
-        }}
+        //editable={{
+        //  onRowUpdate: (newData, oldData) =>
+        //    new Promise((resolve, reject) => {
+        //      setTimeout(() => {
+        //        const dataUpdate = [...this.state.data];
+        //        const index = oldData.tableData.id;
+        //        dataUpdate[index] = newData;
+        //        this.change(newData)
+        //        this.props.openSnackBar()
+        //        resolve();
+        //      }, 1000)
+        //    })
+        //}}
         title="Transações"
       />
       <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType}drawerData={drawerData}/>
+      <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType}drawerData={drawerData}/>
     </div>
   );
 

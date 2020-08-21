@@ -57,7 +57,8 @@ class AggregateComponent extends Component {
 
   componentDidUpdate(prevProps) {
     var host = window.location.hostname;
-    if (prevProps.teste !== this.props.teste) {
+    console.log(prevProps.updateTableData, this.props.updateTableData)
+    if (prevProps.updateTableData !== this.props.updateTableData) {
       axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
         const result = res.data;
         this.setState({ data: result })

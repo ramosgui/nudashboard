@@ -117,6 +117,8 @@ export default function MiniDrawer() {
 
   const [openSnackBar, setSnackBar] = React.useState(false);
 
+  const [updateTableData, setUpdateTableData] = useState([]);
+
   const handleOpenSnackBar = () => {
     setSnackBar(true);
   };
@@ -220,11 +222,11 @@ export default function MiniDrawer() {
         <Grid item xs={12} sm={6}>
         <CardComponent />
         </Grid>
-        <Grid item xs={6} sm={3}>
-        <AggregateComponent teste={myState} />
+        <Grid item xs={12} sm={3}>
+        <AggregateComponent teste={myState} updateTableData={updateTableData}/>
         </Grid>
         <Grid item xs={12} sm={9}>
-        <TableExampleComponent teste={setMyState} tableData={tableData} openSnackBar={handleOpenSnackBar}/>
+        <TableExampleComponent teste={setMyState} tableData={tableData} openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData}/>
         </Grid>
       </Grid>
 

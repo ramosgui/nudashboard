@@ -84,16 +84,15 @@ def update_transaction_category():
     return jsonify(formatted_transactions), 200
 
 
-@transaction_blueprint.route('/transaction/title/update', methods=['PUT'])
-def update_transaction_title():
+@transaction_blueprint.route('/transaction/update', methods=['POST'])
+def update_transaction():
     req_content = request.get_json(force=True)
 
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
 
-    service.update_trx_title(new_title=req_content['title'].strip(), trx_id=req_content['id'].strip(),
-                             type_=req_content['type'].strip())
+    service.update_trx_title(new_transaction_name=req_content['transactionName'].strip(), id_=req_content['id'],
+                             same_transaction_name=req_content['sameTransactionName'],
+                             same_transaction_charge=req_content['sameTransactionCharge'])
 
-    transactions = service.get_transactions(start_date=req_content['startDate'], end_date=req_content['endDate'])
-    formatted_transactions = _format_transactions(transactions)
-    return jsonify(formatted_transactions), 200
+    return jsonify({'msg': 'Transaction has been updated.'}), 200

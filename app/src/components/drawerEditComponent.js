@@ -21,7 +21,6 @@ import { yellow } from '@material-ui/core/colors';
 import { grey } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
 import { red } from '@material-ui/core/colors';
-import { blue } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -54,12 +53,12 @@ import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
 import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
 import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
-import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
-import BeachAccessOutlinedIcon from '@material-ui/icons/BeachAccessOutlined';
 
 import Checkbox from '@material-ui/core/Checkbox';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -91,17 +90,13 @@ const useStyles = makeStyles((theme) => ({
 
 const categoryIcons = {
   Gordices: <span className='circle' style={{ borderColor: orange[500] }}><FastfoodOutlinedIcon style={{ color: orange[500] }} /></span>,
-  Supermercado: <span className='circle' style={{ borderColor: orange[500] }}><ShoppingCartOutlinedIcon style={{ color: orange[500] }} /></span>,
+  Supermercado: <span className='circle' style={{ borderColor: green[500] }}><ShoppingCartOutlinedIcon style={{ color: green[500] }} /></span>,
   Pets: <span className='circle'><PetsOutlinedIcon /></span>,
   Carro: <span className='circle' style={{ borderColor: yellow[600] }}><DriveEtaOutlinedIcon style={{ color: yellow[600] }} /></span>,
-  'Outras Rendas': <span className='circle' style={{borderColor: green[600]}}><AttachMoneyOutlinedIcon style={{color: green[600]}}/></span>,
-  Remuneração: <span className='circle' style={{ borderColor: green[600] }}><AccountBalanceWalletOutlinedIcon style={{ color: green[600] }} /></span>,
-  Lazer: <span className='circle' style={{ borderColor: blue[600] }}><BeachAccessOutlinedIcon style={{ color: blue[600] }} /></span>,
   Compras: <span className='circle'><LocalMallOutlinedIcon /></span>,
   Serviços: <span className='circle' style={{ borderColor: grey[500] }}><FeaturedPlayListOutlinedIcon style={{ color: grey[500] }} /></span>,
   Casa: <span className='circle'><HomeOutlinedIcon /></span>,
   Presentes: <span className='circle' style={{ borderColor: pink[300] }}><CardGiftcardOutlinedIcon style={{ color: pink[300] }} /></span>,
-  Outros: <span className='circle' style={{ borderColor: green[300] }}><LocalOfferOutlinedIcon style={{ color: green[300] }} /></span>,
   'Sem Categoria': <span className='circle' style={{ borderColor: pink[300] }}><AccountBalanceWalletOutlinedIcon style={{ color: red[500] }} /></span>,
 }
 
@@ -110,51 +105,113 @@ const categoryIcons = {
 export default function TemporaryDrawer(props) {
   const classes = useStyles();
 
-  const [useCategory, setUseCategory] = useState(false)
+  const [values, setValues] = useState({ });
+  const [checked, setChecked] = React.useState(false);
+  const [chargeChecked, setChargeChecked] = React.useState(false);
 
-  const handleCategory = () => {
-    setUseCategory(!useCategory)
-  }
+  const handleChange = (event) => {
+    const auxValues = { ...values };
+    auxValues[event.target.name] = event.target.value;
+    setValues(auxValues);
+    console.log(event.target.name, event.target.value, values)
+  };
 
-  const updateCategory = (category) => {
+  const handleChecked = (event) => {
+    setChecked(event.target.checked);
+    const auxValues = { ...values };
+    auxValues[event.target.name] = event.target.checked;
+    setValues(auxValues);
+  };
 
-    if (category === 'Sem Categoria') {
-      category = ''
-    }
+  const handleChargeChecked = (event) => {
+    setChargeChecked(event.target.checked);
+    const auxValues = { ...values };
+    auxValues[event.target.name] = event.target.checked;
+    setValues(auxValues);
+  };
 
-    var type = undefined
-    if (useCategory === true) {
-      type = 'same_name'
-    } else {
-      type = 'trx'
-    }
+  const updateTransaction = () => {
     var host = window.location.hostname;
-      axios.put('http://'+host+':5050/transaction/category/update', { 'id': props.drawerData.id, 'category': category, 'type': type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
+      axios.post('http://'+host+':5050/transaction/update', {'id': props.drawerData.id, 
+      'sameTransactionName': values.sameTransactionName, 
+      'transactionName': values.transactionName,
+       'sameTransactionCharge': values.sameTransactionCharge}).then(res => {
         props.closeDrawer()
       });
   };
 
+  useEffect(() => {
+    setValues({'transactionName': props.drawerData.title, 'sameTransactionName': false, 'sameTransactionCharge': false});
+    setChecked(false);
+    setChargeChecked(false);
+  }, [props.drawerState])
+
+
   return (
-    <div>
 
         <Drawer anchor='right' open={props.drawerState} onClose={props.closeDrawer}>
           <div
             className={clsx(classes.list)}
             role="presentation"
           >
-            <Checkbox
-              onChange={handleCategory}
-              name="checkedB"
-              color="primary"
-            />Sempre usar essa categoria (Sempre que tiver uma transação com esse nome, essa categoria já vai ser escolhida.)
-      {Object.entries(categoryIcons).map(([k, v]) => (
-              <ListItem button key={k} onClick={() => { updateCategory(k) }}>
-                <ListItemIcon>{v}</ListItemIcon>
-                <ListItemText primary={k} />
-              </ListItem>
-            ))}</div>
-        </Drawer>
+
+<div className={classes.root}>
+      <div className={classes.section1}>
+        <Grid container alignItems="center">
+          <Grid item>
+            <Typography gutterBottom variant="h6">
+              X
+            </Typography>
+          </Grid>
+          <Grid item xs>
+            <Typography gutterBottom variant="h6">
+              Editar Transação
+            </Typography>
+          </Grid>
+        </Grid>
+        <TextField id="transaction_name" name='transactionName' label="Nome da Transação" defaultValue={props.drawerData.title} onChange={handleChange}/>
+        <TextField disabled id="amount" value={props.drawerData.amount}/>
+        <TextField disabled id="date" value={props.drawerData.dt}/>
+        </div>
+        <div className={classes.section1}>
+        <FormControlLabel
+        control={
+          <Checkbox
+          checked={checked}
+          onChange={handleChecked}
+            name="sameTransactionName"
+            color="primary"
+          />
+        }
+        label="Sempre usar esta descrição. (Altera automaticamente transações com o mesmo nome)"
+      />
+      <FormControlLabel
+        control={
+          <Checkbox
+          checked={chargeChecked}
+          onChange={handleChargeChecked}
+            name="sameTransactionCharge"
+            color="primary"
+          />
+        }
+        label="Sempre usar esta descrição para as transações da mesma parcela. (Altera automaticamente transações da mesma compra)"
+      />
+      </div>
+      <Divider variant="middle" />
+      <div className={classes.section2}>
+      <Button variant="contained" color="primary" onClick={updateTransaction}> 
+  Salvar
+</Button>
+<Button variant="contained" color="secondary" onClick={() => {alert('Not Implemented')}} tooltip='AAAA'> 
+  Restore
+</Button>
+
+      </div>
 
     </div>
+
+</div>
+        </Drawer>
+
   );
 }

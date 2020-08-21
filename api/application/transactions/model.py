@@ -103,12 +103,20 @@ class TransactionModel:
         self._to_save['category_type'] = value
 
     @property
-    def title_type(self):
-        return 'ok'
+    def same_transaction_name(self):
+        return None
 
-    @title_type.setter
-    def title_type(self, value):
-        self._to_save['title_type'] = value
+    @same_transaction_name.setter
+    def same_transaction_name(self, value):
+        self._to_save['same_transaction_name'] = value
+
+    @property
+    def same_transaction_charge(self):
+        return None
+
+    @same_transaction_charge.setter
+    def same_transaction_charge(self, value):
+        self._to_save['same_transaction_charge'] = value
 
     def save(self):
         if self._to_save.get('category_type'):
@@ -120,11 +128,14 @@ class TransactionModel:
             self._category_map_collection.update_one({'_id': id_}, {"$set": {"value": self._to_save['category']}},
                                                      upsert=True)
 
-        elif self._to_save.get('title_type'):
-            if self._to_save['title_type'] == 'trx':
-                self._title_mapping_collection.update_one({'_id': self.id}, {"$set": {"value": self._to_save['title']}}, upsert=True)
-            elif self._to_save['title_type'] == 'same_name':
+        elif self._to_save.get('same_transaction_name') is not None:
+
+            if self._to_save['same_transaction_name'] is True:
                 self._title_mapping_collection.update_one({'_id': self.raw_title}, {"$set": {"value": self._to_save['title']}}, upsert=True)
-            elif self._to_save['title_type'] == 'charges':
-                if self.ref_id:
+
+            elif self._to_save['same_transaction_charge'] is True:
+                if self.charges:
                     self._title_mapping_collection.update_one({'_id': self.ref_id}, {"$set": {"value": self._to_save['title']}}, upsert=True)
+
+            else:
+                self._title_mapping_collection.update_one({'_id': self.id}, {"$set": {"value": self._to_save['title']}}, upsert=True)
