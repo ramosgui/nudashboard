@@ -56,7 +56,6 @@ class AggregateComponent extends Component {
 
   componentDidUpdate(prevProps) {
     var host = window.location.hostname;
-    console.log(prevProps.updateTableData, this.props.updateTableData)
     if (prevProps.updateTableData !== this.props.updateTableData) {
       axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
         const result = res.data;
@@ -121,7 +120,6 @@ class AggregateComponent extends Component {
               field: "value",
               render: rowData => <div>
                 <span>{rowData.value}</span>
-                <span>{this.amountPercent(rowData.percentile, rowData.lastValue, "Mês passado no mesmo periodo: ")}</span>
                 <span>{this.amountPercent(rowData.percentileFull, rowData.lastFullValue, "Mês passado todo: ")}</span>
               </div>
             }

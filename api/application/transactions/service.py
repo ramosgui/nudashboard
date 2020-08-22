@@ -50,18 +50,14 @@ class TransactionService:
 
     def get_amount_by_category(self):
         # todo realizar conversão por timezone
-        end_date = datetime.utcnow()
+        end_date = datetime.utcnow() - timedelta(hours=3)
         start_date = datetime(end_date.year, end_date.month, 1)
 
         last_start_date = start_date - relativedelta(months=1)
-        last_end_date = end_date - relativedelta(months=1)
         final_end_date = start_date - relativedelta(seconds=1)
 
         trx_amount_by_categories = self._transaction_repository.get_trx_amount_by_categories(start_date=start_date,
                                                                                              end_date=end_date)
-
-        last_trx_amount_by_categories = self._transaction_repository.get_trx_amount_by_categories(start_date=last_start_date,
-                                                                                                  end_date=last_end_date)
 
         last_full_trx_amount_by_categories = self._transaction_repository.get_trx_amount_by_categories(start_date=last_start_date,
                                                                                                        end_date=final_end_date)
@@ -69,18 +65,14 @@ class TransactionService:
         trx_amount_by_categories_to_ret = []
         for category, amount in trx_amount_by_categories.items():
 
-            last_amount = last_trx_amount_by_categories.get(category, 0)
             last_full_amount = last_full_trx_amount_by_categories.get(category, 0)
 
-            percent = self._test(value_to_compare=amount, total_value=last_amount)
             percent_full = self._test(value_to_compare=amount, total_value=last_full_amount)
 
             formatted = {
                 'category': category,
                 'value': amount,
-                'last_value': last_amount,
                 'last_full_value': last_full_amount,
-                'percent': percent,
                 'percent_full': percent_full
             }
 

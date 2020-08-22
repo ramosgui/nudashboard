@@ -34,10 +34,10 @@ export default function FormDialog(props) {
   const enviarQr = () => {
     var host = window.location.hostname;
     axios.post('http://'+host+':5050/sync', { 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }).then(res => {
-      props.toggleState();
       handleQrClose();
       props.openSnackBar()
       handleCloseBackDrop();
+      props.toggleState();
     })
   };
 

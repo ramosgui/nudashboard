@@ -17,7 +17,7 @@ def _format_amount(amount: float):
 
 
 def _format_date(dt: datetime):
-    return dt.strftime('%d/%m/%Y')
+    return dt.strftime('%Y-%m-%d')
 
 
 def _format_transactions(transactions: List[TransactionModel]):
@@ -54,7 +54,7 @@ def get_transactions():
     transactions = service.get_transactions(start_date=params['startDate'], end_date=params['endDate'])
     formatted_transactions = _format_transactions(transactions)
 
-    return jsonify(formatted_transactions), 200
+    return jsonify(sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)), 200
 
 
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
@@ -64,7 +64,7 @@ def get_amount_by_category():
     amount_by_category = service.get_amount_by_category()
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
-    amount_by_category = [{'category': x['category'], 'percentile': x['percent'], 'value': _format_amount(x['value']), 'lastValue': _format_amount(x['last_value']), 'percentileFull': x['percent_full'], 'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
+    amount_by_category = [{'category': x['category'], 'value': _format_amount(x['value']), 'percentileFull': x['percent_full'], 'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
 
     return jsonify(amount_by_category), 200
 

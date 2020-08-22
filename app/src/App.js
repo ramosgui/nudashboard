@@ -227,10 +227,10 @@ export default function MiniDrawer() {
         <CardComponent />
         </Grid>
         <Grid item xs={12} sm={3}>
-        <AggregateComponent updateTableData={updateTableData}/>
+        <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState}/>
         </Grid>
         <Grid item xs={12} sm={9}>
-        <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData}/>
+        <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState}/>
         </Grid>
       </Grid>
 

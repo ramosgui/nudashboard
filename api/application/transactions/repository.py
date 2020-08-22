@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from dateutil.relativedelta import relativedelta
+
 from application.transactions.model import TransactionModel
 from config import MongoDatabaseConfig
 
@@ -26,13 +28,23 @@ class TransactionRepository:
 
     def get_transactions(self, start_date: datetime, end_date: datetime):
         filters_ = {
-            'post_date': {'$gte': start_date, '$lte': end_date}
+            'post_date': {'$gte': start_date - relativedelta(months=1), '$lte': end_date}
         }
         result = self._transaction_collection.find(filters_).sort([('post_date', -1), ('charges', 1)])
 
+        current_month = end_date.month
+
         transactions = []
         for trx in result:
-            transactions.append(self._create_transaction_model(trx))
+            if trx['post_date'].month == current_month-1 and trx.get('index') is not None:
+                future_trx = trx.copy()
+                if future_trx['index']+1 != future_trx['charges']:
+                    future_trx['index'] += 1
+                    future_trx['post_date'] = future_trx['post_date'] + relativedelta(months=1)
+                    transactions.append(self._create_transaction_model(future_trx))
+
+            if trx['post_date'].month >= start_date.month:
+                transactions.append(self._create_transaction_model(trx))
 
         return transactions
 

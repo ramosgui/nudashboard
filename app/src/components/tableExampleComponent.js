@@ -161,7 +161,7 @@ export default function TransactionsTableComponent(props) {
       setTableData(res.data)
       props.setUpdateTableData(res.data)
     });
-  }, [drawer, editDrawer])
+  }, [drawer, editDrawer, props.syncModalState])
 
   return (
     <div>
