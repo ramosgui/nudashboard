@@ -1,6 +1,6 @@
-import React, { Component, useState, useEffect} from "react";
+import React, { useState, useEffect} from "react";
 import axios from 'axios'
-import MaterialTable, { MTableToolbar } from "material-table";
+import MaterialTable from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
 
 
@@ -302,41 +302,3 @@ export default function TransactionsTableComponent(props) {
 
 }
 
-
-
-
-
-class tableExampleComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      data: [],
-      drawer: false,
-      drawerData: {}
-    }
-
-  };
-
-
-  change(data) {
-    var host = window.location.hostname;
-    if (this.change_title_type) {
-      axios.put('http://'+host+':5050/transaction/title/update', { 'id': data.id, 'title': data.title, 'type': this.change_title_type, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
-        const result = res.data;
-        this.setState({ data: result });
-      });
-      this.change_title_type = undefined
-    }
-
-    if (this.a) {
-      var host = window.location.hostname;
-      axios.put('http://'+host+':5050/transaction/category/update', { 'id': data.id, 'category': data.category, 'type': this.a, 'startDate': '2020-07-01', 'endDate': '2020-08-30' }).then(res => {
-        const result = res.data;
-        this.props.teste(result)
-        this.setState({ data: result });
-      });
-      this.a = undefined
-    }
-  }
-
-}

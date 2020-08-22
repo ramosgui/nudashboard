@@ -110,14 +110,18 @@ export default function MiniDrawer() {
   const classes = useStyles();
   const theme = useTheme();
 
-  const [myState, setMyState] = useState(0);
   const [open, setOpen] = React.useState(false);
-
-  const [tableData, setTableData] = useState(undefined);
 
   const [openSnackBar, setSnackBar] = React.useState(false);
 
   const [updateTableData, setUpdateTableData] = useState([]);
+
+
+  const [syncModalState, setSyncModalState] = useState(0);
+
+  const toggleSyncModalState = () => {
+    setSyncModalState(!syncModalState)
+  }
 
   const handleOpenSnackBar = () => {
     setSnackBar(true);
@@ -214,7 +218,7 @@ export default function MiniDrawer() {
 
         <Grid container spacing={3}>
         <Grid item xs={12}>
-          <SyncModalComponent setTableData={setTableData} setAggregateData={setMyState} openSnackBar={handleOpenSnackBar}/>
+          <SyncModalComponent state={syncModalState} toggleState={toggleSyncModalState} openSnackBar={handleOpenSnackBar}/>
         </Grid>
         <Grid item xs={12} sm={6}>
         <CardComponent />
@@ -223,10 +227,10 @@ export default function MiniDrawer() {
         <CardComponent />
         </Grid>
         <Grid item xs={12} sm={3}>
-        <AggregateComponent teste={myState} updateTableData={updateTableData}/>
+        <AggregateComponent updateTableData={updateTableData}/>
         </Grid>
         <Grid item xs={12} sm={9}>
-        <TableExampleComponent teste={setMyState} tableData={tableData} openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData}/>
+        <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData}/>
         </Grid>
       </Grid>
 

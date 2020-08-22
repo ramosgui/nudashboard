@@ -24,7 +24,6 @@ const useStyles = makeStyles((theme) => ({
 export default function FormDialog(props) {
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(false);
   const [openQrCode, setQrCode] = React.useState(false);
   const [getUuid, setUuid] = React.useState(null);
 
@@ -35,22 +34,11 @@ export default function FormDialog(props) {
   const enviarQr = () => {
     var host = window.location.hostname;
     axios.post('http://'+host+':5050/sync', { 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }).then(res => {
-      handleClose();
+      props.toggleState();
       handleQrClose();
-      props.setTableData(res.data)
-      props.setAggregateData(res.data)
       props.openSnackBar()
       handleCloseBackDrop();
     })
-  };
-
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
   };
 
   const handleQrOpen = () => {
@@ -71,10 +59,10 @@ export default function FormDialog(props) {
 
   return (
     <div>
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+      <Button variant="outlined" color="primary" onClick={props.toggleState}>
         Sync Transactions
       </Button>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <Dialog open={props.state} onClose={props.toggleState} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Sync Transactions</DialogTitle>
 
 
@@ -83,10 +71,10 @@ export default function FormDialog(props) {
             <DialogContentText>
               Utilize esse QRCode para sincronizar suas transações. Após o mesmo escaneado, clique em "Submit".
             </DialogContentText>
-            <QrCode varTeste={setUuid} reqParams={{ 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }} closeDialog={handleClose} />
+            <QrCode varTeste={setUuid} reqParams={{ 'cpf': values.cpf, 'password': values.password, 'qr_uuid': getUuid }} closeDialog={props.toggleState} />
             <DialogActions>
               <form noValidate autoComplete="off" onSubmit={handleSubmit(enviarQr)}>
-                <Button onClick={() => { handleClose(); handleQrClose(); }} color="primary">Cancel</Button>
+                <Button onClick={() => { props.toggleState(); handleQrClose(); }} color="primary">Cancel</Button>
                 <Button onClick={handleToggleBackDrop} type="submit" color="primary">{loading ? "Submitting..." : "Submit"}</Button></form>
                 <Backdrop className={classes.backdrop} open={openBackDrop} onClick={handleCloseBackDrop}>
         <CircularProgress color="inherit" />
@@ -116,7 +104,7 @@ export default function FormDialog(props) {
             />
 
             <DialogActions>
-              <Button onClick={() => { handleClose(); handleQrClose(); }} color="primary">Cancel</Button>
+              <Button onClick={() => { props.toggleState(); handleQrClose(); }} color="primary">Cancel</Button>
               <button onClick={handleQrOpen} color="primary">Continue</button>
             </DialogActions>
             
