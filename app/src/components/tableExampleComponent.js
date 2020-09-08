@@ -7,12 +7,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { forwardRef } from 'react';
 
 import { green } from '@material-ui/core/colors';
-import { orange } from '@material-ui/core/colors';
-import { yellow } from '@material-ui/core/colors';
-import { grey } from '@material-ui/core/colors';
-import { pink } from '@material-ui/core/colors';
-import { red } from '@material-ui/core/colors';
-import { blue } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -34,24 +28,13 @@ import LabelImportantIcon from '@material-ui/icons/LabelImportant';
 import LabelIcon from '@material-ui/icons/Label';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
-import FastfoodOutlinedIcon from '@material-ui/icons/FastfoodOutlined';
-import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
-import PetsOutlinedIcon from '@material-ui/icons/PetsOutlined';
-import AttachMoneyOutlinedIcon from '@material-ui/icons/AttachMoneyOutlined';
-import DriveEtaOutlinedIcon from '@material-ui/icons/DriveEtaOutlined';
-import LocalMallOutlinedIcon from '@material-ui/icons/LocalMallOutlined';
-import FeaturedPlayListOutlinedIcon from '@material-ui/icons/FeaturedPlayListOutlined';
-import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
-import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
-import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
-import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
-import BeachAccessOutlinedIcon from '@material-ui/icons/BeachAccessOutlined';
 import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
 
 import DrawerCategory from './drawerCategoryComponent'
 import DrawerEditTransaction from './drawerEditComponent'
+import categoryIcons from './categoryComponent';
 
 
 
@@ -76,22 +59,6 @@ const tableIcons = {
   Category: forwardRef((props, ref) => <FormatListBulletedOutlinedIcon {...props} ref={ref} />),
 };
 
-const categoryIcons = {
-  Gordices: <span className='circle' style={{borderColor: orange[500]}}><FastfoodOutlinedIcon style={{color: orange[500]}}/></span>,
-  Supermercado: <span className='circle' style={{borderColor: orange[500]}}><ShoppingCartOutlinedIcon style={{color: orange[500]}}/></span>,
-  Pets: <span className='circle'><PetsOutlinedIcon/></span>,
-  Carro: <span className='circle' style={{borderColor: yellow[600]}}><DriveEtaOutlinedIcon style={{color: yellow[600]}}/></span>,
-  'Outras Rendas': <span className='circle' style={{borderColor: green[600]}}><AttachMoneyOutlinedIcon style={{color: green[600]}}/></span>,
-  Remuneração: <span className='circle' style={{ borderColor: green[600] }}><AccountBalanceWalletOutlinedIcon style={{ color: green[600] }} /></span>,
-  Lazer: <span className='circle' style={{ borderColor: blue[600] }}><BeachAccessOutlinedIcon style={{ color: blue[600] }} /></span>,
-  Compras: <span className='circle'><LocalMallOutlinedIcon/></span>,
-  Serviços: <span className='circle' style={{borderColor: grey[500]}}><FeaturedPlayListOutlinedIcon style={{color: grey[500]}}/></span>,
-  Casa: <span className='circle'><HomeOutlinedIcon/></span>,
-  Presentes: <span className='circle' style={{borderColor: pink[300]}}><CardGiftcardOutlinedIcon style={{color: pink[300]}}/></span>,
-  Outros: <span className='circle' style={{ borderColor: green[300] }}><LocalOfferOutlinedIcon style={{ color: green[300] }} /></span>,
-  'Sem Categoria': <span className='circle' style={{borderColor: pink[300]}}><AccountBalanceWalletOutlinedIcon style={{color: red[500]}}/></span>,
-}
-
 const amountFunction = (amount, category) => {
   if (amount.includes('-')) {
     return <div style={{ color: green[500] }}>{amount}</div>
@@ -110,8 +77,6 @@ const testCategoryFunction = (categoryName) => {
       }
     });
       return <div><span style={{float: 'left'}}>{render}</span><span style={{float: 'left', color: 'rgba(0, 0, 0, 0.73);', marginLeft: '5px', paddingTop: '10px'}}>{categoryName}</span></div>
-    
-    
   }
 
 export default function TransactionsTableComponent(props) {
@@ -157,7 +122,7 @@ export default function TransactionsTableComponent(props) {
 
   useEffect(() => {
     var host = window.location.hostname;
-    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-07-01', 'endDate': '2020-08-30' } }).then(res => {
+    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-08-30', 'endDate': '2020-09-30' } }).then(res => {
       setTableData(res.data)
       props.setUpdateTableData(res.data)
     });
@@ -183,13 +148,12 @@ export default function TransactionsTableComponent(props) {
         icons={tableIcons}
         columns={[
           {
-            title: "Type",
             field: "type",
             editable: 'never',
             render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
           },
           {
-            title: "Title",
+            title: "Descrição",
             field: "title",
             editComponent: props => (
               <div>
@@ -218,7 +182,7 @@ export default function TransactionsTableComponent(props) {
             </div>
           },
           {
-            title: "Category",
+            title: "Categoria",
             field: "category",
             editComponent: props => (
               <div>
@@ -253,12 +217,12 @@ export default function TransactionsTableComponent(props) {
             //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
           },
           {
-            title: "Amount",
+            title: "Valor",
             field: "amount",
             editable: 'never',
             render: rowData => amountFunction(rowData.amount, rowData.rawCategory)
           },
-          { title: "Date", field: "dt", editable: 'never' },
+          { title: "Data", field: "dt", editable: 'never' },
         ]}
         data={tableData}
         actions={[

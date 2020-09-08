@@ -28,6 +28,9 @@ class TransactionService:
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
         return self._transaction_repository.get_transactions(start_date=start_date, end_date=end_date)
 
+    def get_future_transactions(self):
+        return self._transaction_repository.get_future_transactions()
+
     def _test(self, value_to_compare, total_value):
         if total_value == 0:
             op = None

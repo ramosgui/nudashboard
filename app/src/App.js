@@ -28,6 +28,7 @@ import TableChartIcon from '@material-ui/icons/TableChart';
 
 import AggregateComponent from './components/aggregateComponent'
 import TableExampleComponent from './components/tableExampleComponent'
+import FutureTransactionsComponent from './components/futureTransactionsComponent'
 import SyncModalComponent from './components/syncModalComponent'
 import CardComponent from './components/cardComponent'
 
@@ -211,30 +212,32 @@ export default function MiniDrawer() {
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
-        <Alert onClose={handleCloseSnackBar} severity="success">
-          This is a success message!
+          <Alert onClose={handleCloseSnackBar} severity="success">
+            This is a success message!
         </Alert>
-      </Snackbar>
+        </Snackbar>
 
         <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <SyncModalComponent state={syncModalState} toggleState={toggleSyncModalState} openSnackBar={handleOpenSnackBar}/>
+          <Grid item xs={12}>
+            <SyncModalComponent state={syncModalState} toggleState={toggleSyncModalState} openSnackBar={handleOpenSnackBar} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <CardComponent />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <CardComponent />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState} />
+          </Grid>
+          <Grid item xs={12} sm={9}>
+            <FutureTransactionsComponent /><br></br>
+            <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState} />
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={6}>
-        <CardComponent />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <CardComponent />
-        </Grid>
-        <Grid item xs={12} sm={3}>
-        <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState}/>
-        </Grid>
-        <Grid item xs={12} sm={9}>
-        <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState}/>
-        </Grid>
-      </Grid>
 
       </main>
     </div>
   );
 }
+    

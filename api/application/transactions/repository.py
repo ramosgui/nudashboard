@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -28,25 +28,40 @@ class TransactionRepository:
 
     def get_transactions(self, start_date: datetime, end_date: datetime):
         filters_ = {
-            'post_date': {'$gte': start_date - relativedelta(months=1), '$lte': end_date}
+            'post_date': {'$gte': start_date, '$lte': end_date}
         }
         result = self._transaction_collection.find(filters_).sort([('post_date', -1), ('charges', 1)])
 
-        current_month = end_date.month
-
         transactions = []
         for trx in result:
-            if trx['post_date'].month == current_month-1 and trx.get('index') is not None:
-                future_trx = trx.copy()
-                if future_trx['index']+1 != future_trx['charges']:
-                    future_trx['index'] += 1
-                    future_trx['post_date'] = future_trx['post_date'] + relativedelta(months=1)
-                    transactions.append(self._create_transaction_model(future_trx))
-
-            if trx['post_date'].month >= start_date.month:
-                transactions.append(self._create_transaction_model(trx))
-
+            transactions.append(self._create_transaction_model(trx))
         return transactions
+
+    def get_future_transactions(self):
+        end_date = datetime.utcnow()
+        start_date = end_date - relativedelta(months=1)
+
+        future_transactions = []
+        ref_control = {}
+
+        transactions = self.get_transactions(start_date, end_date)
+        for trx in transactions:
+            if trx.index is not None:
+                if trx.ref_id not in ref_control:
+                    ref_control[trx.ref_id] = trx
+
+                    formatted_index = trx.index+1
+                    if formatted_index < trx.charges:
+                        trx.index = formatted_index
+                        trx.time = trx.time + relativedelta(months=1)
+                        future_transactions.append(trx)
+
+                else:
+                    saved = ref_control[trx.ref_id]
+                    if trx.index > saved.index:
+                        raise ValueError('Algo errado nao esta certo')
+
+        return future_transactions
 
     def get_trx_amount_by_categories(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)

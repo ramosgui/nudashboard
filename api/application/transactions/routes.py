@@ -57,6 +57,20 @@ def get_transactions():
     return jsonify(sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)), 200
 
 
+@transaction_blueprint.route('/future_transactions', methods=['GET'])
+def get_future_transactions():
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+    transactions = service.get_future_transactions()
+
+    formatted_transactions = _format_transactions(transactions)
+    formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
+
+    return jsonify({'qtd': len(transactions),
+                    'value': _format_amount(sum([x.amount for x in transactions])),
+                    'transactions': formatted_transactions}), 200
+
+
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
 def get_amount_by_category():
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)

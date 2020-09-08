@@ -56,10 +56,13 @@ import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBullete
 import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
 import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
 import BeachAccessOutlinedIcon from '@material-ui/icons/BeachAccessOutlined';
+import ReceiptOutlinedIcon from '@material-ui/icons/ReceiptOutlined';
 
 import Checkbox from '@material-ui/core/Checkbox';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
+
+import categoryIcons from './categoryComponent';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -87,23 +90,6 @@ const useStyles = makeStyles((theme) => ({
     width: 'auto',
   },
 }));
-
-
-const categoryIcons = {
-  Gordices: <span className='circle' style={{ borderColor: orange[500] }}><FastfoodOutlinedIcon style={{ color: orange[500] }} /></span>,
-  Supermercado: <span className='circle' style={{ borderColor: orange[500] }}><ShoppingCartOutlinedIcon style={{ color: orange[500] }} /></span>,
-  Pets: <span className='circle'><PetsOutlinedIcon /></span>,
-  Carro: <span className='circle' style={{ borderColor: yellow[600] }}><DriveEtaOutlinedIcon style={{ color: yellow[600] }} /></span>,
-  'Outras Rendas': <span className='circle' style={{borderColor: green[600]}}><AttachMoneyOutlinedIcon style={{color: green[600]}}/></span>,
-  Remuneração: <span className='circle' style={{ borderColor: green[600] }}><AccountBalanceWalletOutlinedIcon style={{ color: green[600] }} /></span>,
-  Lazer: <span className='circle' style={{ borderColor: blue[600] }}><BeachAccessOutlinedIcon style={{ color: blue[600] }} /></span>,
-  Compras: <span className='circle'><LocalMallOutlinedIcon /></span>,
-  Serviços: <span className='circle' style={{ borderColor: grey[500] }}><FeaturedPlayListOutlinedIcon style={{ color: grey[500] }} /></span>,
-  Casa: <span className='circle'><HomeOutlinedIcon /></span>,
-  Presentes: <span className='circle' style={{ borderColor: pink[300] }}><CardGiftcardOutlinedIcon style={{ color: pink[300] }} /></span>,
-  Outros: <span className='circle' style={{ borderColor: green[300] }}><LocalOfferOutlinedIcon style={{ color: green[300] }} /></span>,
-  'Sem Categoria': <span className='circle' style={{ borderColor: pink[300] }}><AccountBalanceWalletOutlinedIcon style={{ color: red[500] }} /></span>,
-}
 
 
 
