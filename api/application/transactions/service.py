@@ -24,9 +24,19 @@ class TransactionService:
         return self._transaction_repository.get_transaction(trx_id=trx_id)
 
     def get_transactions(self, start_date: str, end_date: str):
-        start_date = datetime.strptime(start_date, '%Y-%m-%d')
-        end_date = datetime.strptime(end_date, '%Y-%m-%d')
-        return self._transaction_repository.get_transactions(start_date=start_date, end_date=end_date)
+        if 'T' in start_date:
+            dt = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+            start_dt = dt.replace(hour=0)
+        else:
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+
+        if 'T' in end_date:
+            dt = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+            end_dt = dt.replace(hour=0)
+        else:
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+
+        return self._transaction_repository.get_transactions(start_date=start_dt, end_date=end_dt)
 
     def get_future_transactions(self):
         return self._transaction_repository.get_future_transactions()
@@ -104,3 +114,39 @@ class TransactionService:
         trx.same_transaction_name = same_transaction_name
         trx.same_transaction_charge = same_transaction_charge
         trx.save()
+
+    def get_balance(self, end_date: datetime, start_date: datetime, bill: str):
+
+        positive = self._transaction_repository.get_positive_account_transactions(start_date=start_date,
+                                                                                  end_date=end_date)
+
+        positive_transactions = [x.amount for x in positive]
+        positive_value = 0
+        if positive_transactions:
+            positive_value = sum(positive_transactions)
+
+        negative = self._transaction_repository.get_negative_account_transactions(start_date=start_date,
+                                                                                  end_date=end_date)
+
+        negative_transactions = [x.amount for x in negative]
+        negative_value = 0
+        if negative_transactions:
+            negative_value = sum(negative_transactions)
+
+        bill_amount = self._transaction_repository.get_bill_amount(bill)
+
+        total = positive_value - (negative_value + bill_amount)
+
+        return positive_value, negative_value, bill_amount, total
+
+    def get_amount(self):
+        end_date = datetime.utcnow()
+        start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        bill = 'open_bill'
+
+        positive_value, negative_value, bill_amount, bill_total = self.get_balance(bill=bill, start_date=start_date,
+                                                                              end_date=end_date)
+
+        account_total = self._transaction_repository.get_account_amount()
+
+        return account_total, bill_total

@@ -1,8 +1,7 @@
 import React, { useState, useEffect} from "react";
 import axios from 'axios'
-import MaterialTable from "material-table";
+import MaterialTable, {MTableToolbar} from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
-
 
 import { forwardRef } from 'react';
 
@@ -32,9 +31,11 @@ import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBullete
 import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
 
+
 import DrawerCategory from './drawerCategoryComponent'
 import DrawerEditTransaction from './drawerEditComponent'
 import categoryIcons from './categoryComponent';
+import DatePicker from './dateComponent';
 
 
 
@@ -225,6 +226,16 @@ export default function TransactionsTableComponent(props) {
           { title: "Data", field: "dt", editable: 'never' },
         ]}
         data={tableData}
+        components={{
+          Toolbar: props => (
+            <div>
+              <MTableToolbar {...props} /> 
+              <div style={{padding: '0px 10px'}}>
+                <DatePicker setTableData={setTableData}/>
+              </div>
+            </div>
+          ),
+        }}
         actions={[
           {
             icon: () => <FormatListBulletedOutlinedIcon/>,

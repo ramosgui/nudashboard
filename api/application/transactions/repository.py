@@ -12,6 +12,7 @@ class TransactionRepository:
         self._transaction_collection = mongodb.card_transactions_collections
         self._category_mapping_collection = mongodb.category_mapping_collection
         self._title_mapping_collection = mongodb.title_mapping_collection
+        self._current_bill_info_collection = mongodb.current_bill_info_collection
 
     def _create_transaction_model(self, raw_trx: dict):
         trx_model = TransactionModel(id_=raw_trx['_id'], post_date=raw_trx['post_date'], raw_title=raw_trx['title'],
@@ -26,10 +27,14 @@ class TransactionRepository:
         trx = self._transaction_collection.find_one({'_id': trx_id})
         return self._create_transaction_model(trx)
 
-    def get_transactions(self, start_date: datetime, end_date: datetime):
+    def get_transactions(self, start_date: datetime, end_date: datetime, custom_filters: dict = None):
         filters_ = {
             'post_date': {'$gte': start_date, '$lte': end_date}
         }
+
+        if custom_filters:
+            filters_.update(custom_filters)
+
         result = self._transaction_collection.find(filters_).sort([('post_date', -1), ('charges', 1)])
 
         transactions = []
@@ -73,6 +78,28 @@ class TransactionRepository:
             amount_by_category[transaction.category] = float('%.2f' % value)
 
         return amount_by_category
+
+    def get_positive_account_transactions(self, start_date: datetime, end_date: datetime):
+        transactions = self.get_transactions(start_date=start_date, end_date=end_date,
+                                             custom_filters={'category': 'TransferInEvent'})
+
+        return transactions
+
+    def get_negative_account_transactions(self, start_date: datetime, end_date: datetime):
+        transactions = self.get_transactions(start_date=start_date, end_date=end_date,
+                                             custom_filters={'category': {'$in': ['BarcodePaymentEvent',
+                                                                                  'TransferOutEvent']}})
+        return transactions
+
+    def get_bill_amount(self, bill: str):
+        result = self._current_bill_info_collection.find_one({'_id': bill})
+        return result.get('total_balance', 0)/100
+
+    def get_account_amount(self):
+        total = self._current_bill_info_collection.find_one({'_id': 'account_balance'})
+        return total
+
+
 
 # todo em cada preço colocar icone indicando se o gasto é maior ou menor do que os mesmos da categoria
 # todo possivel alterar o title de todas as parcelas

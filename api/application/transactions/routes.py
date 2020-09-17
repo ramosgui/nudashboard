@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
+from dateutil.relativedelta import relativedelta
 from flask import Blueprint, current_app, jsonify, request
 
 from application.transactions.model import TransactionModel
@@ -12,7 +13,8 @@ transaction_blueprint = Blueprint(name='transaction_blueprint', import_name='tra
 
 def _format_amount(amount: float):
     # todo ficar no front end futuramente
-    value = 'R$ {:,.2f}'.format(amount).strip()
+    value = '{:,.2f}'.format(amount).strip()
+    value = 'R$ {}'.format(value)
     return value.replace(',', '#').replace('.', ',').replace('#', '.')
 
 
@@ -78,7 +80,9 @@ def get_amount_by_category():
     amount_by_category = service.get_amount_by_category()
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
-    amount_by_category = [{'category': x['category'], 'value': _format_amount(x['value']), 'percentileFull': x['percent_full'], 'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
+    amount_by_category = [
+        {'category': x['category'], 'value': _format_amount(x['value']), 'percentileFull': x['percent_full'],
+         'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
 
     return jsonify(amount_by_category), 200
 
@@ -110,3 +114,62 @@ def update_transaction():
                              same_transaction_charge=req_content['sameTransactionCharge'])
 
     return jsonify({'msg': 'Transaction has been updated.'}), 200
+
+
+@transaction_blueprint.route('/transactions/transfer_in', methods=['GET'])
+def transfer_in_transactions():
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    end_date = datetime.utcnow()
+    start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    bill = 'open_bill'
+
+    positive_transactions, negative_transactions, bill_amount, total = service.get_balance(start_date=start_date,
+                                                                                           end_date=end_date,
+                                                                                           bill=bill)
+
+    return jsonify({
+        'positive': _format_amount(positive_transactions),
+        'negative': _format_amount(negative_transactions * -1),
+        'fatura': _format_amount(bill_amount * -1),
+        'total': _format_amount(total)
+    }), 200
+
+
+@transaction_blueprint.route('/transactions/last_transfer_in', methods=['GET'])
+def last_transfer_in_transactions():
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    end_date = datetime.utcnow()
+    start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    end_date = start_date - timedelta(microseconds=1)
+    start_date = start_date - relativedelta(months=1)
+    bill = 'lastest_bill'
+
+    positive_transactions, negative_transactions, bill_amount, total = service.get_balance(start_date=start_date,
+                                                                                           end_date=end_date,
+                                                                                           bill=bill)
+
+    return jsonify({
+        'positive': _format_amount(positive_transactions),
+        'negative': _format_amount(negative_transactions * -1),
+        'fatura': _format_amount(bill_amount * -1),
+        'total': _format_amount(total)
+    }), 200
+
+
+@transaction_blueprint.route('/account/amount', methods=['GET'])
+def account_amount():
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    account_total, bill_total = service.get_amount()
+
+    return jsonify({
+        'account_total': _format_amount(account_total['value']),
+        'bill_total': _format_amount(bill_total),
+        'total': _format_amount(account_total['value'] + bill_total)
+    }), 200

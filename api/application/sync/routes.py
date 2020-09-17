@@ -1,5 +1,6 @@
 import base64
 import json
+import uuid
 from datetime import datetime
 from io import BytesIO
 import time
@@ -13,7 +14,9 @@ synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='syn
 
 def _format_bill_transaction(trx: dict, bill_id: str):
     if trx['title'] == 'Pagamento recebido':
-        return
+        return None, None
+
+    filter_ = {'_id': trx['id']}
 
     post_date = datetime.strptime(trx['post_date'], '%Y-%m-%d')
     trx['post_date'] = post_date
@@ -37,7 +40,7 @@ def _format_bill_transaction(trx: dict, bill_id: str):
         trx.pop('index')
         trx.pop('charges')
 
-    return trx
+    return filter_, trx
 
 
 def _format_account_transaction(trx: dict):
@@ -78,6 +81,7 @@ def sync():
     client = MongoClient()
     db = client['nudashboard']
     collection = db['card_transactions']
+    current_bill_info_collection = db['current_bill_info']
 
     bill_info = None
     bills = nu.get_bills()
@@ -85,11 +89,23 @@ def sync():
         if bill['state'] == 'open':
             bill_info = bill
 
+    current_bill_info_collection.update_one(filter={'_id': 'account_balance'},
+                                            update={'$set': {'value': nu.get_account_balance()}},
+                                            upsert=True)
+
     if bill_info:
         latest_bill = bills[bills.index(bill_info)+1]
 
-        open_bill_id = bill_info['_links']['self']['href'].split('/')[-1]
-        latest_bill_id = bill_info['_links']['self']['href'].split('/')[-1]
+        current_bill_info_collection.update_one(filter={'_id': 'open_bill'},
+                                                update={'$set': {'total_balance': bill_info['summary']['total_balance']}},
+                                                upsert=True)
+
+        current_bill_info_collection.update_one(filter={'_id': 'lastest_bill'},
+                                                update={'$set': {'total_balance': latest_bill['summary']['total_balance']}},
+                                                upsert=True)
+
+        open_bill_id = str(uuid.uuid4())
+        latest_bill_id = latest_bill['id']
 
         open_bill_transactions = nu.get_bill_details(bill_info)['bill']['line_items']
         latest_bill_transactions = nu.get_bill_details(latest_bill)['bill']['line_items']
@@ -103,10 +119,10 @@ def sync():
                 pass
 
         for trx in open_bill_transactions:
-            formatted_trx = _format_bill_transaction(trx=trx, bill_id=open_bill_id)
-            if formatted_trx:
+            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=open_bill_id)
+            if filter_:
                 try:
-                    collection.insert_one(formatted_trx)
+                    collection.update_one(filter=filter_, update=update_, upsert=True)
                 except Exception as e:
                     pass
 

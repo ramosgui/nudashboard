@@ -31,7 +31,9 @@ import TableExampleComponent from './components/tableExampleComponent'
 import FutureTransactionsComponent from './components/futureTransactionsComponent'
 import SyncModalComponent from './components/syncModalComponent'
 import CardComponent from './components/cardComponent'
-
+import BillComponent from './components/billComponent'
+import LastBillComponent from './components/lastBillComponent'
+import AccountAmountComponent from './components/accountAmountComponent'
 
 const drawerWidth = 240;
 
@@ -221,12 +223,18 @@ export default function MiniDrawer() {
           <Grid item xs={12}>
             <SyncModalComponent state={syncModalState} toggleState={toggleSyncModalState} openSnackBar={handleOpenSnackBar} />
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <CardComponent />
+          <Grid item xs={12} sm={3}>
+            <LastBillComponent />
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <CardComponent />
+          <Grid item xs={12} sm={3}>
+            <BillComponent />
           </Grid>
+          <Grid item xs={12} sm={3}>
+            <AccountAmountComponent />
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3}>
           <Grid item xs={12} sm={3}>
             <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState} />
           </Grid>
@@ -240,4 +248,3 @@ export default function MiniDrawer() {
     </div>
   );
 }
-    
