@@ -29,7 +29,7 @@ class Config:
 
 
 def mongo_database():
-    client = MongoClient()
+    client = MongoClient(host='mongodb')
     db = client['nudashboard']
     card_transactions_collection = db['card_transactions']
     debit_transactions_collection = db['debit_transactions']

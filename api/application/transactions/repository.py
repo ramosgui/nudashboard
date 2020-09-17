@@ -93,7 +93,9 @@ class TransactionRepository:
 
     def get_bill_amount(self, bill: str):
         result = self._current_bill_info_collection.find_one({'_id': bill})
-        return result.get('total_balance', 0)/100
+        if result:
+            return result.get('total_balance', 0)/100
+        return 0
 
     def get_account_amount(self):
         total = self._current_bill_info_collection.find_one({'_id': 'account_balance'})

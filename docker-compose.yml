@@ -1,0 +1,17 @@
+version: '2'
+services:
+    api:
+        build: ./api/.
+        ports:
+            - "5050:5050"
+        links:
+            - mongodb
+        depends_on:
+            - mongodb
+
+    mongodb:
+        image: mongo:3.6
+        container_name: "mongodb"
+        ports:
+            - 28001:27017
+        command: mongod --smallfiles --logpath=/dev/null # --quiet

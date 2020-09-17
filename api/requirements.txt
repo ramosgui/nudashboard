@@ -1,6 +1,5 @@
 flask
 pynubank
-pillow
 flask-cors
 pytz
 python-dateutil

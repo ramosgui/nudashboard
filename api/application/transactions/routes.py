@@ -167,6 +167,8 @@ def account_amount():
     service = TransactionService(transaction_repository=transaction_repository)
 
     account_total, bill_total = service.get_amount()
+    if account_total is None:
+        account_total = {'value': 0}
 
     return jsonify({
         'account_total': _format_amount(account_total['value']),
