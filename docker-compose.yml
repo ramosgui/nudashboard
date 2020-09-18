@@ -1,6 +1,7 @@
 version: '2'
 services:
     api:
+        container_name: "api"
         build: ./api/.
         ports:
             - "5050:5050"
@@ -9,9 +10,20 @@ services:
         depends_on:
             - mongodb
 
+    app:
+        container_name: "application"
+        build: ./app/.
+        stdin_open: true
+        ports:
+            - "3000:3000"
+        links:
+            - api
+        depends_on:
+            - api
+
     mongodb:
         image: mongo:3.6
         container_name: "mongodb"
         ports:
-            - 28001:27017
+            - "28001:27017"
         command: mongod --smallfiles --logpath=/dev/null # --quiet
