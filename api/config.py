@@ -28,8 +28,8 @@ class Config:
         self.mongodb = mongodb
 
 
-def mongo_database():
-    client = MongoClient(port=28001)
+def mongo_database(mongo_config: dict):
+    client = MongoClient(host=mongo_config['host'], port=mongo_config['port'])
     db = client['nudashboard']
     card_transactions_collection = db['card_transactions']
     debit_transactions_collection = db['debit_transactions']
@@ -44,6 +44,6 @@ def mongo_database():
                                current_bill_info_collection=current_bill_info_collection)
 
 
-def create_config():
-    mongodb = mongo_database()
+def create_config(config_file: dict):
+    mongodb = mongo_database(config_file['mongodb'])
     return Config(mongodb=mongodb)

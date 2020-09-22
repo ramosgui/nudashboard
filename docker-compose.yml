@@ -3,6 +3,8 @@ services:
     api:
         container_name: "api"
         build: ./api/.
+        environment:
+            - ENVIRONMENT=DOCKER
         ports:
             - "5050:5050"
         links:
