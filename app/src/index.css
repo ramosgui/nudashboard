@@ -33,3 +33,10 @@ code {
   width: 73px;
   margin-top: 64px;
 }
+
+#lastUpdate{
+  float: right;
+    padding: 10px;
+    height: 44px;
+    color: #EEEEEE
+}

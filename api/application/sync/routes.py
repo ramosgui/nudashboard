@@ -1,11 +1,10 @@
 import base64
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 
 from flask import Blueprint, request, jsonify, current_app
-from pymongo import MongoClient
 from pynubank import Nubank
 
 synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='synchronize_blueprint')
@@ -143,3 +142,16 @@ def sync():
         return jsonify({'msg': 'Success'}), 200
 
     return jsonify({'msg': 'Internal server error.'}), 500
+
+
+@synchronize_blueprint.route('/sync/last_updated', methods=['GET'])
+def last_updated():
+    current_bill_info_collection = current_app.app_config.mongodb.current_bill_info_collection
+    result = current_bill_info_collection.find_one({'_id': 'latest_update_dt'})
+    if result:
+        # TODO fazer com timezone, tirar hardcoded
+        dt = datetime.fromisoformat(result['dt']) - timedelta(hours=3)
+        dt = dt.strftime('%c')
+    else:
+        dt = 'SINCRONIZAÇÃO NUNCA REALIZADA.'
+    return jsonify({'dt': dt}), 200

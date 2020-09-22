@@ -8,23 +8,10 @@ import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
-import TableChartIcon from '@material-ui/icons/TableChart';
 
 import AggregateComponent from './components/aggregateComponent'
 import TableExampleComponent from './components/tableExampleComponent'
@@ -34,6 +21,7 @@ import CardComponent from './components/cardComponent'
 import BillComponent from './components/billComponent'
 import LastBillComponent from './components/lastBillComponent'
 import AccountAmountComponent from './components/accountAmountComponent'
+import LastUpdateDate from './components/lastUpdateComponent'
 
 const drawerWidth = 240;
 
@@ -147,13 +135,14 @@ export default function MiniDrawer() {
   };
 
   return (
-    <div className={classes.root} style={{height: '100%'}}>
+    <div className={classes.root} style={{ height: '100%' }}>
       <div className='topo'>
+        <LastUpdateDate syncModalState={syncModalState}/>
       </div>
       <div className='menu_lateral'>
       </div>
       <div className='corpo'>
-      <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
+        <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
           <Alert onClose={handleCloseSnackBar} severity="success">
             This is a success message!
         </Alert>
