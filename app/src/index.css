@@ -11,3 +11,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+.topo {
+  background-color: #232F3E;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  height: 64px;
+  position: absolute;
+}
+
+.corpo {
+  margin-top: 64px;
+  padding: 20px;
+  width: 100%;
+}
+
+.menu_lateral {
+  background-color: #1B2430;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  width: 73px;
+  margin-top: 64px;
+}

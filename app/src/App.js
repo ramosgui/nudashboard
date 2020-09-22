@@ -147,73 +147,13 @@ export default function MiniDrawer() {
   };
 
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
-        })}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, {
-              [classes.hide]: open,
-            })}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            Overview
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        className={clsx(classes.drawer, {
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open,
-        })}
-        classes={{
-          paper: clsx({
-            [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open,
-          }),
-        }}
-      >
-        <div className={classes.toolbar} style={{ backgroundColor: '#232F3E', color: '#EEE', borderRight: '1px solid rgba(0, 0, 0, 0.12);' }}>
-          <div><TableChartIcon style={{ fontSize: '30px', float: 'left', margin: '-3px 5px 0 0' }} /></div>
-          <div style={{ float: 'left', fontSize: '18px', fontWeight: '600' }}>NUDashboard</div>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon style={{ color: '#EEEEEE' }} /> : <ChevronLeftIcon style={{ color: '#EEEEEE' }} />}
-          </IconButton>
-        </div>
-        <Divider />
-        <List style={{ color: '#EEEEEE' }}>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }} /> : <MailIcon style={{ color: '#EEEEEE' }} />}</ListItemIcon>
-              <ListItemText style={{ color: '#EEEEEE' }} primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List style={{ color: '#EEEEEE' }}>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>{index % 2 === 0 ? <InboxIcon style={{ color: '#EEEEEE' }} /> : <MailIcon style={{ color: '#EEEEEE' }} />}</ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
-        <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
+    <div className={classes.root} style={{height: '100%'}}>
+      <div className='topo'>
+      </div>
+      <div className='menu_lateral'>
+      </div>
+      <div className='corpo'>
+      <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnackBar}>
           <Alert onClose={handleCloseSnackBar} severity="success">
             This is a success message!
         </Alert>
@@ -243,8 +183,9 @@ export default function MiniDrawer() {
             <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState} />
           </Grid>
         </Grid>
+      </div>
 
-      </main>
+
     </div>
   );
 }

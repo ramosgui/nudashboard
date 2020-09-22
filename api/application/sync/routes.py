@@ -3,9 +3,8 @@ import json
 import uuid
 from datetime import datetime
 from io import BytesIO
-import time
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from pymongo import MongoClient
 from pynubank import Nubank
 
@@ -77,18 +76,15 @@ def sync():
     nu = Nubank()
     nu.authenticate_with_qr_code(req['cpf'], req['password'], req['qr_uuid'])
 
-    client = MongoClient(host='mongodb')
-    db = client['nudashboard']
-    collection = db['card_transactions']
-    current_bill_info_collection = db['current_bill_info']
+    mongodb = current_app.app_config.mongodb
+    transaction_collection = mongodb.card_transactions_collections
+    current_bill_info_collection = mongodb.current_bill_info_collection
 
     bill_info = None
     bills = nu.get_bills()
-    print(bills)
     for bill in bills:
         if bill['state'] == 'open':
             bill_info = bill
-            print(bill_info)
 
     current_bill_info_collection.update_one(filter={'_id': 'account_balance'},
                                             update={'$set': {'value': nu.get_account_balance()}},
@@ -101,8 +97,12 @@ def sync():
                                                 update={'$set': {'total_balance': bill_info['summary']['total_balance']}},
                                                 upsert=True)
 
-        current_bill_info_collection.update_one(filter={'_id': 'lastest_bill'},
+        current_bill_info_collection.update_one(filter={'_id': 'latest_bill'},
                                                 update={'$set': {'total_balance': latest_bill['summary']['total_balance']}},
+                                                upsert=True)
+
+        current_bill_info_collection.update_one(filter={'_id': 'latest_update_dt'},
+                                                update={'$set': {'dt': datetime.utcnow().isoformat()}},
                                                 upsert=True)
 
         open_bill_id = str(uuid.uuid4())
@@ -112,33 +112,30 @@ def sync():
         latest_bill_transactions = nu.get_bill_details(latest_bill)['bill']['line_items']
         account_transactions = nu.get_account_statements()
 
-        print('account')
         for trx in account_transactions:
             formatted_trx = _format_account_transaction(trx=trx)
             try:
-                collection.insert_one(formatted_trx)
+                transaction_collection.insert_one(formatted_trx)
             except Exception as e:
                 print(e)
                 pass
 
-        print('bill')
         for trx in open_bill_transactions:
             filter_, update_ = _format_bill_transaction(trx=trx, bill_id=open_bill_id)
             print(filter_, update_)
             if filter_:
                 try:
-                    collection.update_one(filter=filter_, update=update_, upsert=True)
+                    transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
                 except Exception as e:
                     print(e)
                     pass
 
-        print('latest bill')
         for trx in latest_bill_transactions:
             filter_, update_ = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
             print(filter_, update_)
             if filter_:
                 try:
-                    collection.update_one(filter=filter_, update=update_, upsert=True)
+                    transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
                 except Exception as e:
                     print(e)
                     pass

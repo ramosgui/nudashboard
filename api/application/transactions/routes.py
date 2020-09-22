@@ -147,7 +147,7 @@ def last_transfer_in_transactions():
 
     end_date = start_date - timedelta(microseconds=1)
     start_date = start_date - relativedelta(months=1)
-    bill = 'lastest_bill'
+    bill = 'latest_bill'
 
     positive_transactions, negative_transactions, bill_amount, total = service.get_balance(start_date=start_date,
                                                                                            end_date=end_date,
