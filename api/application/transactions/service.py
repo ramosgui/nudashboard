@@ -145,7 +145,7 @@ class TransactionService:
         bill = 'open_bill'
 
         positive_value, negative_value, bill_amount, bill_total = self.get_balance(bill=bill, start_date=start_date,
-                                                                              end_date=end_date)
+                                                                                   end_date=end_date)
 
         account_total = self._transaction_repository.get_account_amount()
 

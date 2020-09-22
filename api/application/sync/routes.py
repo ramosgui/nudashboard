@@ -40,7 +40,7 @@ def _format_bill_transaction(trx: dict, bill_id: str):
         trx.pop('index')
         trx.pop('charges')
 
-    return filter_, trx
+    return filter_, {'$set': trx}
 
 
 def _format_account_transaction(trx: dict):
@@ -73,21 +73,22 @@ def get_qr_code():
 @synchronize_blueprint.route('/sync', methods=['POST'])
 def sync():
     req = json.loads(request.data)
-    time.sleep(1)
 
     nu = Nubank()
     nu.authenticate_with_qr_code(req['cpf'], req['password'], req['qr_uuid'])
 
-    client = MongoClient()
+    client = MongoClient(host='mongodb')
     db = client['nudashboard']
     collection = db['card_transactions']
     current_bill_info_collection = db['current_bill_info']
 
     bill_info = None
     bills = nu.get_bills()
+    print(bills)
     for bill in bills:
         if bill['state'] == 'open':
             bill_info = bill
+            print(bill_info)
 
     current_bill_info_collection.update_one(filter={'_id': 'account_balance'},
                                             update={'$set': {'value': nu.get_account_balance()}},
@@ -111,27 +112,35 @@ def sync():
         latest_bill_transactions = nu.get_bill_details(latest_bill)['bill']['line_items']
         account_transactions = nu.get_account_statements()
 
+        print('account')
         for trx in account_transactions:
             formatted_trx = _format_account_transaction(trx=trx)
             try:
                 collection.insert_one(formatted_trx)
             except Exception as e:
+                print(e)
                 pass
 
+        print('bill')
         for trx in open_bill_transactions:
             filter_, update_ = _format_bill_transaction(trx=trx, bill_id=open_bill_id)
+            print(filter_, update_)
             if filter_:
                 try:
                     collection.update_one(filter=filter_, update=update_, upsert=True)
                 except Exception as e:
+                    print(e)
                     pass
 
+        print('latest bill')
         for trx in latest_bill_transactions:
-            formatted_trx = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
-            if formatted_trx:
+            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
+            print(filter_, update_)
+            if filter_:
                 try:
-                    collection.insert_one(formatted_trx)
+                    collection.update_one(filter=filter_, update=update_, upsert=True)
                 except Exception as e:
+                    print(e)
                     pass
 
         return jsonify({'msg': 'Success'}), 200
