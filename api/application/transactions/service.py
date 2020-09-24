@@ -110,7 +110,7 @@ class TransactionService:
         :return:
         """
         trx = self.get_transaction(trx_id=id_)
-        trx.title = new_transaction_name
+        trx.name = new_transaction_name
         trx.same_transaction_name = same_transaction_name
         trx.same_transaction_charge = same_transaction_charge
         trx.save()

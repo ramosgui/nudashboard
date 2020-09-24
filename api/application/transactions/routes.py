@@ -25,23 +25,30 @@ def _format_date(dt: datetime):
 def _format_transactions(transactions: List[TransactionModel]):
     formatted_transactions = []
     for transaction in transactions:
+
+        if transaction.name == 'Yankees':
+            print('ok')
+
         trx = {
             'id': transaction.id,
             'refId': transaction.ref_id,
-            'title': transaction.title,
+            'title': transaction.name,
             'rawTitle': transaction.raw_title,
-            'titleById': transaction.title_by_trx_id,
-            'titleByMap': transaction.title_by_raw_title,
+            'titleById': transaction.title_by_id,
+            'titleByMap': transaction.title_by_name,
             'titleByRef': transaction.title_by_ref_id,
             'category': transaction.category,
             'rawCategory': transaction.raw_category,
             'categoryById': transaction.category_by_trx_id,
-            'categoryByMap': transaction.category_by_trx_title,
+            'categoryByMap': transaction.category_by_trx_name,
             'amount': _format_amount(transaction.amount),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
             'chargesPaid': transaction.charges_paid,
-            'type': transaction.type
+            'type': transaction.type,
+            'sameNameCheck': transaction.same_name_check,
+            'sameCategoryCheck': transaction.same_category_check,
+            'useRawCategory': transaction.use_raw_category
         }
         formatted_transactions.append(trx)
     return formatted_transactions
@@ -106,12 +113,55 @@ def update_transaction_category():
 def update_transaction():
     req_content = request.get_json(force=True)
 
+    info = req_content['auxValues']
+
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
 
-    service.update_trx_title(new_transaction_name=req_content['transactionName'].strip(), id_=req_content['id'],
-                             same_transaction_name=req_content['sameTransactionName'],
-                             same_transaction_charge=req_content['sameTransactionCharge'])
+    transaction = service.get_transaction(info['id'])
+    category_col = current_app.app_config.mongodb.category_mapping_collection
+    title_col = current_app.app_config.mongodb.title_mapping_collection
+    trx_col = current_app.app_config.mongodb.card_transactions_collections
+
+    if info['sameCategory'] is False:
+        category_col.remove({'_id': info['trx']})
+        category_col.update_one({'_id': info['id']}, {'$set': {'value': info['category']}}, upsert=True)
+
+    elif info['sameCategory'] is True:
+        category_col.remove({'_id': info['id']})
+        category_col.update_one({'_id': info['trx']}, {'$set': {'value': info['category']}}, upsert=True)
+
+    if info['sameTransactionName'] is False:
+        title_col.update_one({'_id': info['id']}, {'$set': {'value': info['trx']}}, upsert=True)
+        if transaction.charges:
+            title_col.update_one({'_id': transaction.ref_id}, {'$set': {'value': info['trx']}}, upsert=True)
+
+    elif info['sameTransactionName'] is True:
+        title_col.remove({'_id': transaction.id})
+        title_col.update_one({'_id': transaction.raw_title}, {'$set': {'value': info['trx']}}, upsert=True)
+
+    elif info['fixedTransaction'] is False:
+        print('ok')
+
+    elif info['fixedTransaction'] is True:
+        print('ok')
+
+    else:
+        title_col.update_one({'_id': info['id']}, {'$set': {'value': info['trx']}}, upsert=True)
+        if transaction.charges:
+            title_col.update_one({'_id': transaction.ref_id}, {'$set': {'value': info['trx']}}, upsert=True)
+
+
+
+
+
+
+    #     print('aqui')
+    #
+    #
+    # service.update_trx_title(new_transaction_name=req_content['transactionName'].strip(), id_=req_content['id'],
+    #                          same_transaction_name=req_content['sameTransactionName'],
+    #                          same_transaction_charge=req_content['sameTransactionCharge'])
 
     return jsonify({'msg': 'Transaction has been updated.'}), 200
 
@@ -175,3 +225,9 @@ def account_amount():
         'bill_total': _format_amount(bill_total),
         'total': _format_amount(account_total['value'] + bill_total)
     }), 200
+
+
+# TODO PARA TRANSAÇÕES COM MAPEADAS ATRAVES DO NOME E DA PARCELA COLOCAR UM ICONE DE INTERROGAÇÃO EXPLICANDO
+
+
+# TODO NOMEAR PARCELAR AUTOMATICAMENTE

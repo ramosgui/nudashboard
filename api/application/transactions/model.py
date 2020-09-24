@@ -21,12 +21,14 @@ class TransactionModel:
         self.index = index
         self.type = type_
 
-        self.title_by_trx_id = None
-        self.title_by_raw_title = None
+        self.title_by_id = None
+        self.title_by_name = None
         self.title_by_ref_id = None
 
         self.category_by_trx_id = None
-        self.category_by_trx_title = None
+        self.category_by_trx_name = None
+
+        self.use_raw_category = None
 
         self._to_save = {}
 
@@ -36,12 +38,12 @@ class TransactionModel:
             return self.index + 1
 
     @property
-    def title(self):
+    def name(self):
         title = None
 
         title_by_raw_title = self._title_mapping_collection.find_one({'_id': self.raw_title})
         if title_by_raw_title and title_by_raw_title['value']:
-            self.title_by_raw_title = title_by_raw_title['value']
+            self.title_by_name = title_by_raw_title['value']
             title = title_by_raw_title['value']
 
         title_by_ref_id = self._title_mapping_collection.find_one({'_id': self.ref_id})
@@ -51,7 +53,7 @@ class TransactionModel:
 
         title_by_trx_id = self._title_mapping_collection.find_one({'_id': self.id})
         if title_by_trx_id and title_by_trx_id['value']:
-            self.title_by_trx_id = title_by_trx_id['value']
+            self.title_by_id = title_by_trx_id['value']
             title = title_by_trx_id['value']
 
         if title:
@@ -59,8 +61,8 @@ class TransactionModel:
         else:
             return self.raw_title
 
-    @title.setter
-    def title(self, value):
+    @name.setter
+    def name(self, value):
         self._to_save['title'] = value
 
     @property
@@ -68,9 +70,9 @@ class TransactionModel:
         category = None
 
         # pelo titulo da transação
-        category_by_trx_title = self._category_map_collection.find_one({'_id': self.title})
+        category_by_trx_title = self._category_map_collection.find_one({'_id': self.name})
         if category_by_trx_title and category_by_trx_title['value']:
-            self.category_by_trx_title = category_by_trx_title['value']
+            self.category_by_trx_name = category_by_trx_title['value']
             category = category_by_trx_title['value']
 
         # pelo id da trx
@@ -80,9 +82,11 @@ class TransactionModel:
             category = category_by_trx_id['value']
 
         if category:
+            self.use_raw_category = False
             return category
         else:
-            return 'Sem Categoria'
+            self.use_raw_category = True
+            return self.raw_category
 
     @category.setter
     def category(self, value):
@@ -124,7 +128,7 @@ class TransactionModel:
             if self._to_save['category_type'] == 'trx':
                 id_ = self.id
             elif self._to_save['category_type'] == 'same_name':
-                id_ = self.title
+                id_ = self.name
             self._category_map_collection.update_one({'_id': id_}, {"$set": {"value": self._to_save['category']}},
                                                      upsert=True)
 

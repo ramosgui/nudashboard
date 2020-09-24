@@ -9,56 +9,23 @@ import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
-import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-
-import { green } from '@material-ui/core/colors';
-import { orange } from '@material-ui/core/colors';
-import { yellow } from '@material-ui/core/colors';
-import { grey } from '@material-ui/core/colors';
-import { pink } from '@material-ui/core/colors';
-import { red } from '@material-ui/core/colors';
-
-import AddBox from '@material-ui/icons/AddBox';
-import ArrowDownward from '@material-ui/icons/ArrowDownward';
-import Check from '@material-ui/icons/Check';
-import ChevronLeft from '@material-ui/icons/ChevronLeft';
-import ChevronRight from '@material-ui/icons/ChevronRight';
-import Clear from '@material-ui/icons/Clear';
-import DeleteOutline from '@material-ui/icons/DeleteOutline';
-import Edit from '@material-ui/icons/Edit';
-import FilterList from '@material-ui/icons/FilterList';
-import FirstPage from '@material-ui/icons/FirstPage';
-import LastPage from '@material-ui/icons/LastPage';
-import Remove from '@material-ui/icons/Remove';
-import SaveAlt from '@material-ui/icons/SaveAlt';
-import Search from '@material-ui/icons/Search';
-import ViewColumn from '@material-ui/icons/ViewColumn';
-import LabelOffIcon from '@material-ui/icons/LabelOff';
-import LabelImportantIcon from '@material-ui/icons/LabelImportant';
-import LabelIcon from '@material-ui/icons/Label';
-import CreditCardIcon from '@material-ui/icons/CreditCard';
-import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
-import FastfoodOutlinedIcon from '@material-ui/icons/FastfoodOutlined';
-import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
-import PetsOutlinedIcon from '@material-ui/icons/PetsOutlined';
-import AttachMoneyOutlinedIcon from '@material-ui/icons/AttachMoneyOutlined';
-import DriveEtaOutlinedIcon from '@material-ui/icons/DriveEtaOutlined';
-import LocalMallOutlinedIcon from '@material-ui/icons/LocalMallOutlined';
-import FeaturedPlayListOutlinedIcon from '@material-ui/icons/FeaturedPlayListOutlined';
-import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
-import CardGiftcardOutlinedIcon from '@material-ui/icons/CardGiftcardOutlined';
-import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
-import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
 
 import Checkbox from '@material-ui/core/Checkbox';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+
+import categoryIcons from './categoryComponent';
+import DrawerViewCategory from './drawerCategoryViewComponent'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -88,130 +55,222 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const categoryIcons = {
-  Gordices: <span className='circle' style={{ borderColor: orange[500] }}><FastfoodOutlinedIcon style={{ color: orange[500] }} /></span>,
-  Supermercado: <span className='circle' style={{ borderColor: green[500] }}><ShoppingCartOutlinedIcon style={{ color: green[500] }} /></span>,
-  Pets: <span className='circle'><PetsOutlinedIcon /></span>,
-  Carro: <span className='circle' style={{ borderColor: yellow[600] }}><DriveEtaOutlinedIcon style={{ color: yellow[600] }} /></span>,
-  Compras: <span className='circle'><LocalMallOutlinedIcon /></span>,
-  Serviços: <span className='circle' style={{ borderColor: grey[500] }}><FeaturedPlayListOutlinedIcon style={{ color: grey[500] }} /></span>,
-  Casa: <span className='circle'><HomeOutlinedIcon /></span>,
-  Presentes: <span className='circle' style={{ borderColor: pink[300] }}><CardGiftcardOutlinedIcon style={{ color: pink[300] }} /></span>,
-  'Sem Categoria': <span className='circle' style={{ borderColor: pink[300] }}><AccountBalanceWalletOutlinedIcon style={{ color: red[500] }} /></span>,
-}
-
-
 
 export default function TemporaryDrawer(props) {
   const classes = useStyles();
 
-  const [values, setValues] = useState({ });
-  const [checked, setChecked] = React.useState(false);
-  const [chargeChecked, setChargeChecked] = React.useState(false);
+  const [values, setValues] = useState({
+    'sameCategory': null,
+    'sameTransactionName': null,
+    'sameTransactionCharge': null,
+    'fixedTransaction': null,
+    'defaultTransactionName': null
+  });
+
+  const [viewCategoryDrawer, setViewCategoryDrawer] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState({})
+
+  const openViewCategoryDrawer = () => {
+    setViewCategoryDrawer(true)
+  }
+
+  const closeViewCategoryDrawer = () => {
+    setViewCategoryDrawer(false)
+  }
 
   const handleChange = (event) => {
     const auxValues = { ...values };
     auxValues[event.target.name] = event.target.value;
+    
+    if (event.target.name === 'trx') {
+      console.log(event.target.value, props.drawerData.title)
+
+      if (event.target.value === props.drawerData.title) {
+        auxValues['sameTransactionName'] = props.drawerData.sameNameCheck
+
+      } else {
+        auxValues['sameTransactionName'] = false
+      }
+    }
+
     setValues(auxValues);
-    console.log(event.target.name, event.target.value, values)
+
   };
 
-  const handleChecked = (event) => {
-    setChecked(event.target.checked);
+  const handleGenericChecked = (event) => {
     const auxValues = { ...values };
-    auxValues[event.target.name] = event.target.checked;
-    setValues(auxValues);
-  };
-
-  const handleChargeChecked = (event) => {
-    setChargeChecked(event.target.checked);
-    const auxValues = { ...values };
+    console.log(event.target.name, event.target.checked)
     auxValues[event.target.name] = event.target.checked;
     setValues(auxValues);
   };
 
   const updateTransaction = () => {
     var host = window.location.hostname;
-      axios.post('http://'+host+':5050/transaction/update', {'id': props.drawerData.id, 
-      'sameTransactionName': values.sameTransactionName, 
-      'transactionName': values.transactionName,
-       'sameTransactionCharge': values.sameTransactionCharge}).then(res => {
-        props.closeDrawer()
-      });
+    const auxValues = { ...values }
+
+    auxValues['category'] = currentCategory.name
+
+    axios.post('http://' + host + ':5050/transaction/update', { auxValues }).then(res => {
+      props.closeDrawer()
+    });
   };
 
+  const getCategoryIcon = (categoryName) => {
+    var render = null
+    var q = Object.entries(categoryIcons)
+      .map(([key, value]) => {
+        if (categoryName === key) {
+          render = value
+        }
+      });
+    return { 'icon': render, 'name': categoryName }
+  }
+
   useEffect(() => {
-    setValues({'transactionName': props.drawerData.title, 'sameTransactionName': false, 'sameTransactionCharge': false});
-    setChecked(false);
-    setChargeChecked(false);
+
+    const auxValues = {
+      'id': props.drawerData.id, 
+      'trx': props.drawerData.title, 
+      'category': props.drawerData.category,
+      'sameCategory': props.drawerData.sameCategoryCheck,
+      'sameTransactionName': props.drawerData.sameNameCheck,
+      'fixedTransaction': null,
+      'defaultTransactionName': null
+    }
+    setValues(auxValues);
+    
+    var icon = null
+    icon = getCategoryIcon(props.drawerData.category)
+    setCurrentCategory(icon)
+
+    console.log(props.drawerData)
+
   }, [props.drawerState])
 
 
   return (
 
-        <Drawer anchor='right' open={props.drawerState} onClose={props.closeDrawer}>
-          <div
-            className={clsx(classes.list)}
-            role="presentation"
-          >
+    <Drawer anchor='right' open={props.drawerState} onClose={props.closeDrawer}>
+      <div
+        className={clsx(classes.list)}
+        role="presentation"
+      >
 
-<div className={classes.root}>
-      <div className={classes.section1}>
-        <Grid container alignItems="center">
-          <Grid item>
-            <Typography gutterBottom variant="h6">
-              X
+        <div className={classes.root}>
+          <div className={classes.section1}>
+            <Grid container alignItems="center">
+              <Grid item>
+                <Typography gutterBottom variant="h6">
+                  X
             </Typography>
-          </Grid>
-          <Grid item xs>
-            <Typography gutterBottom variant="h6">
-              Editar Transação
+              </Grid>
+              <Grid item xs>
+                <Typography gutterBottom variant="h6">
+                  Editar Transação
             </Typography>
-          </Grid>
-        </Grid>
-        <TextField id="transaction_name" name='transactionName' label="Nome da Transação" defaultValue={props.drawerData.title} onChange={handleChange}/>
-        <TextField disabled id="amount" value={props.drawerData.amount}/>
-        <TextField disabled id="date" value={props.drawerData.dt}/>
+              </Grid>
+            </Grid>
+            <TextField id="transaction_name" name='trx' label="Nome" defaultValue={props.drawerData.title} onChange={handleChange} />
+            <TextField disabled id="amount" value={props.drawerData.amount} />
+            <TextField disabled id="date" value={props.drawerData.dt} />
+          </div>
+          <div className={classes.section1}>
+            <FormControl component="fieldset">
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={values.sameTransactionName}
+                      onChange={handleGenericChecked}
+                      name="sameTransactionName"
+                      color="primary"
+                    />
+                  }
+                  label="Sempre usar este nome"
+                />
+                <FormHelperText>Todas transações com o nome <b>{props.drawerData.rawTitle}</b> serão automaticamente nomeadas para <b>{values.trx}</b>.</FormHelperText>
+              </FormGroup>
+
+              <br />
+
+              <FormGroup aria-label="position" row>
+                <FormControlLabel
+                  value="end"
+                  control={<Checkbox color="primary" />}
+                  label="Definir como transação fixa"
+                  labelPlacement="end"
+                  onClick={() => { alert('Not Implemented') }}
+                />
+                <FormHelperText>Essa transação será definida como uma transação recorrente. A transação em questão será exibida como futura e também o gasto médio das transações com o mesmo nome irá entrar em métricas futuras.</FormHelperText>
+              </FormGroup>
+
+              {/*<br />
+
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={values.defaultTransactionName}
+                      onChange={handleGenericChecked}
+                      name="defaultTransactionName"
+                      color="primary"
+                    />
+                  }
+                  label="Restaurar nome da transação."
+                />
+                <FormHelperText>Restaura o nome "default" da transação.</FormHelperText>
+                </FormGroup>*/}
+              
+            </FormControl>
+          </div>
+          <Divider variant="middle" />
+          <div className={classes.section1}>
+            <span >
+
+              <ListItem button key={currentCategory.name} onClick={openViewCategoryDrawer}>
+                <ListItemIcon>{currentCategory.icon}</ListItemIcon>
+                <ListItemText primary={currentCategory.name} />
+              </ListItem>
+
+              <FormControl component="fieldset">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={values.sameCategory}
+                        onChange={handleGenericChecked}
+                        name="sameCategory"
+                        color="primary"
+                      />
+                    }
+                    label="Sempre usar esta categoria"
+                  />
+                  <FormHelperText>Com isso, essa categoria será escolhida automaticamente para todas transações com o mesmo nome.</FormHelperText>
+                </FormGroup>
+
+              </FormControl>
+
+            </span>
+          </div>
+          <Divider variant="middle" />
+          <div className={classes.section2}>
+            <span><Button variant="contained" color="primary" onClick={updateTransaction}>
+              Salvar
+</Button></span>
+
+            <span>
+              <Button style={{ marginLeft: '10px' }} variant="contained" color="secondary" onClick={() => { alert('Not Implemented') }} tooltip='AAAA'>
+                Restore
+</Button></span>
+
+          </div>
+
         </div>
-        <div className={classes.section1}>
-        <FormControlLabel
-        control={
-          <Checkbox
-          checked={checked}
-          onChange={handleChecked}
-            name="sameTransactionName"
-            color="primary"
-          />
-        }
-        label="Sempre usar esta descrição. (Altera automaticamente transações com o mesmo nome)"
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-          checked={chargeChecked}
-          onChange={handleChargeChecked}
-            name="sameTransactionCharge"
-            color="primary"
-          />
-        }
-        label="Sempre usar esta descrição para as transações da mesma parcela. (Altera automaticamente transações da mesma compra)"
-      />
-      </div>
-      <Divider variant="middle" />
-      <div className={classes.section2}>
-      <Button variant="contained" color="primary" onClick={updateTransaction}> 
-  Salvar
-</Button>
-<Button variant="contained" color="secondary" onClick={() => {alert('Not Implemented')}} tooltip='AAAA'> 
-  Restore
-</Button>
 
       </div>
+      <DrawerViewCategory drawerState={viewCategoryDrawer} openDrawer={openViewCategoryDrawer} closeDrawer={closeViewCategoryDrawer} setCurrentCategory={setCurrentCategory} />
 
-    </div>
-
-</div>
-        </Drawer>
+    </Drawer>
 
   );
 }

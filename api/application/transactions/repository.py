@@ -39,7 +39,26 @@ class TransactionRepository:
 
         transactions = []
         for trx in result:
-            transactions.append(self._create_transaction_model(trx))
+            transaction_model = self._create_transaction_model(trx)
+
+            if transaction_model.name == 'Yankees':
+                print('ok')
+
+            a = transaction_model.category
+
+            same_category_check = False
+            if transaction_model.category_by_trx_name and not transaction_model.category_by_trx_id:
+                same_category_check = True
+
+            transaction_model.same_category_check = same_category_check
+
+            same_name_check = False
+            if transaction_model.title_by_name and not transaction_model.title_by_id:
+                same_name_check = True
+
+            transaction_model.same_name_check = same_name_check
+
+            transactions.append(transaction_model)
         return transactions
 
     def get_future_transactions(self):

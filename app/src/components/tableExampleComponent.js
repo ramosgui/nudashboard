@@ -6,6 +6,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { forwardRef } from 'react';
 
 import { green } from '@material-ui/core/colors';
+import { blue } from '@material-ui/core/colors';
+import { pink } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -30,6 +32,7 @@ import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
 import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
+import HelpIcon from '@material-ui/icons/Help';
 
 
 import DrawerCategory from './drawerCategoryComponent'
@@ -154,7 +157,7 @@ export default function TransactionsTableComponent(props) {
             render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
           },
           {
-            title: "Descrição",
+            title: "Nome",
             field: "title",
             editComponent: props => (
               <div>
@@ -172,13 +175,11 @@ export default function TransactionsTableComponent(props) {
             ),
             render: rowData => <div>
               <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
-              <div style={{ float: 'left', marginTop: '1px', marginLeft: '5px' }}><Tooltip title={
+              <div style={{ float: 'left', marginTop: '-5px', marginLeft: '2px' }}><Tooltip title={
                 <div>
-                  <div>Título default: {rowData.rawTitle}</div>
-                  <div>{rowData.titleByMap ? "Título pelo nome default: " + rowData.titleByMap : undefined}</div>
-                  <div>{rowData.titleByRef ? "Título de todas parcelas: " + rowData.titleByRef : undefined}</div>
-                  <div>{rowData.titleById ? "Título pelo ID: " + rowData.titleById : undefined}</div>
-                </div>} arrow interactive>{rowData.titleById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.titleByRef ? <LabelIcon style={{ fontSize: 18, color: green[500] }} /> : rowData.titleByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon style={{ fontSize: 18 }} />}</Tooltip>
+                  <div>Nome mapeado automaticamente pela opção</div>
+                  <div>"Sempre usar este nome"</div>
+                </div>} arrow interactive>{rowData.sameNameCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : <div></div>}</Tooltip>
               </div>
             </div>
           },
@@ -207,12 +208,11 @@ export default function TransactionsTableComponent(props) {
 
 
               </div>
-              <div style={{ float: 'left', marginTop: '1px', paddingTop: '10px'}}><Tooltip title={
+              <div style={{ float: 'left', marginTop: '5px', marginLeft: '2px' }}><Tooltip title={
                 <div>
-                  <div>Categoria default: {rowData.rawCategory}</div>
-                  <div>{rowData.categoryByMap ? "Categoria pela nome da transação: " + rowData.categoryByMap : undefined}</div>
-                  <div>{rowData.categoryById ? "Categoria pelo ID da transação: " + rowData.categoryById : undefined}</div>
-                </div>} arrow interactive>{rowData.categoryById ? <LabelImportantIcon style={{ fontSize: 18 }} /> : rowData.categoryByMap ? <LabelIcon style={{ fontSize: 18 }} /> : <LabelOffIcon color='secondary' style={{ fontSize: 18 }} />}</Tooltip>
+                  <div>{rowData.sameCategoryCheck ? "Nome mapeado automaticamente pela opção" : "Categoria default da transação"}</div>
+              <div>{rowData.sameCategoryCheck ? '"Sempre usar esta categoria"' : <div></div>}</div>
+              </div>} arrow interactive>{rowData.sameCategoryCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : rowData.useRawCategory ? <HelpIcon style={{ fontSize: 15, color: pink[500] }} /> : <div></div>}</Tooltip>
               </div>
             </div>
             //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
