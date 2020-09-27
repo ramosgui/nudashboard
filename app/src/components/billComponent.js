@@ -13,6 +13,7 @@ import Divider from '@material-ui/core/Divider';
 const useStyles = makeStyles({
   root: {
     minWidth: 275,
+    minHeight: 230
   },
   bullet: {
     display: 'inline-block',

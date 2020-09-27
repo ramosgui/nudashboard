@@ -146,6 +146,9 @@ export default function MiniDrawer() {
           <Grid item xs={12} sm={3}>
             <AccountAmountComponent />
           </Grid>
+          <Grid item xs={12} sm={3}>
+            <AccountAmountComponent />
+          </Grid>
         </Grid>
 
         <Grid container spacing={3}>

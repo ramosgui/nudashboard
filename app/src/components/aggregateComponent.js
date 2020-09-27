@@ -88,20 +88,16 @@ export default function AgreggateComponent(props) {
             // backgroundColor: '#01579b',
             // color: '#FFF'
             fontWeight: 'bold'
+          },
+          cellStyle: {
+            padding: 10
           }
         }}
         icons={tableIcons}
         columns={[
-          { title: "Category", field: "category", cellStyle: {
-            width: 300,
-            minWidth: 100
-            },
-            headerStyle: {
-            width: 300,
-            minWidth: 100
-            }, },
+          { title: "Category", field: "category" },
           { 
-            title: "Amount", 
+            title: "Valor", 
             field: "value",
             render: rowData => <div>
               <span>{rowData.value}</span>
