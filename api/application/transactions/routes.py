@@ -11,6 +11,10 @@ from application.transactions.service import TransactionService
 transaction_blueprint = Blueprint(name='transaction_blueprint', import_name='transaction_blueprint')
 
 
+def _convert_dt_str_to_dt(str_dt: str, dt_format: str = '%Y-%m-%dT%H:%M:%S.%fZ') -> datetime:
+    return datetime.strptime(str_dt, dt_format)
+
+
 def _format_amount(amount: float):
     # todo ficar no front end futuramente
     value = '{:,.2f}'.format(amount).strip()
@@ -19,15 +23,12 @@ def _format_amount(amount: float):
 
 
 def _format_date(dt: datetime):
-    return dt.strftime('%Y-%m-%d')
+    return dt.strftime('%d/%m/%Y')
 
 
 def _format_transactions(transactions: List[TransactionModel]):
     formatted_transactions = []
     for transaction in transactions:
-
-        if transaction.name == 'Yankees':
-            print('ok')
 
         trx = {
             'id': transaction.id,
@@ -48,7 +49,8 @@ def _format_transactions(transactions: List[TransactionModel]):
             'type': transaction.type,
             'sameNameCheck': transaction.same_name_check,
             'sameCategoryCheck': transaction.same_category_check,
-            'useRawCategory': transaction.use_raw_category
+            'useRawCategory': transaction.use_raw_category,
+            'isFixed': transaction.is_fixed
         }
         formatted_transactions.append(trx)
     return formatted_transactions
@@ -140,21 +142,24 @@ def update_transaction():
         title_col.remove({'_id': transaction.id})
         title_col.update_one({'_id': transaction.raw_title}, {'$set': {'value': info['trx']}}, upsert=True)
 
-    elif info['fixedTransaction'] is False:
-        print('ok')
-
-    elif info['fixedTransaction'] is True:
-        print('ok')
-
     else:
         title_col.update_one({'_id': info['id']}, {'$set': {'value': info['trx']}}, upsert=True)
         if transaction.charges:
             title_col.update_one({'_id': transaction.ref_id}, {'$set': {'value': info['trx']}}, upsert=True)
 
+    if info['fixedTransaction'] is False:
+        trxs_to_update = []
+        for trx in title_col.find({'value': info['trx']}):
+            trxs_to_update.append(trx['_id'])
+        trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
+        trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
 
-
-
-
+    elif info['fixedTransaction'] is True:
+        trxs_to_update = []
+        for trx in title_col.find({'value': info['trx']}):
+            trxs_to_update.append(trx['_id'])
+        trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
+        trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
 
     #     print('aqui')
     #
@@ -224,6 +229,42 @@ def account_amount():
         'account_total': _format_amount(account_total['value']),
         'bill_total': _format_amount(bill_total),
         'total': _format_amount(account_total['value'] + bill_total)
+    }), 200
+
+
+@transaction_blueprint.route('/transactions/fixed', methods=['GET'])
+def get_fixed_transactions():
+    params = dict(request.args)
+
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    start_date = _convert_dt_str_to_dt(params['startDate'])
+    end_date = _convert_dt_str_to_dt(params['endDate'])
+
+    transactions = service.get_fixed_transactions(start_date=start_date, end_date=end_date)
+    formatted_transactions = _format_transactions(transactions)
+
+    return jsonify(formatted_transactions), 200
+
+
+@transaction_blueprint.route('/transactions/fixed/amount', methods=['GET'])
+def get_fixed_transactions_amount():
+    params = dict(request.args)
+
+    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
+    service = TransactionService(transaction_repository=transaction_repository)
+
+    start_date = _convert_dt_str_to_dt(params['startDate'])
+    end_date = _convert_dt_str_to_dt(params['endDate'])
+
+    positive_amount, negative_amount = service.get_amount_from_fixed_transactions(start_date=start_date,
+                                                                                  end_date=end_date)
+
+    return jsonify({
+        'positive': _format_amount(positive_amount),
+        'negative': _format_amount(negative_amount * -1),
+        'total': _format_amount(positive_amount + (negative_amount * -1))
     }), 200
 
 

@@ -7,7 +7,7 @@ import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemAvatar from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -26,6 +26,11 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 
 import categoryIcons from './categoryComponent';
 import DrawerViewCategory from './drawerCategoryViewComponent'
+
+import IconButton from '@material-ui/core/IconButton';
+
+import DeleteIcon from '@material-ui/icons/Delete';
+import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -48,6 +53,9 @@ const useStyles = makeStyles((theme) => ({
   },
   list: {
     width: 350,
+  },
+  title: {
+    margin: theme.spacing(4, 0, 2),
   },
   fullList: {
     width: 'auto',
@@ -83,13 +91,14 @@ export default function TemporaryDrawer(props) {
     auxValues[event.target.name] = event.target.value;
     
     if (event.target.name === 'trx') {
-      console.log(event.target.value, props.drawerData.title)
 
       if (event.target.value === props.drawerData.title) {
         auxValues['sameTransactionName'] = props.drawerData.sameNameCheck
+        auxValues['fixedTransaction'] = props.drawerData.isFixed
 
       } else {
         auxValues['sameTransactionName'] = false
+        auxValues['fixedTransaction'] = false
       }
     }
 
@@ -112,6 +121,7 @@ export default function TemporaryDrawer(props) {
 
     axios.post('http://' + host + ':5050/transaction/update', { auxValues }).then(res => {
       props.closeDrawer()
+      props.setUpdateData(!props.updateData)
     });
   };
 
@@ -134,8 +144,7 @@ export default function TemporaryDrawer(props) {
       'category': props.drawerData.category,
       'sameCategory': props.drawerData.sameCategoryCheck,
       'sameTransactionName': props.drawerData.sameNameCheck,
-      'fixedTransaction': null,
-      'defaultTransactionName': null
+      'fixedTransaction': props.drawerData.isFixed
     }
     setValues(auxValues);
     
@@ -196,12 +205,18 @@ export default function TemporaryDrawer(props) {
               <FormGroup aria-label="position" row>
                 <FormControlLabel
                   value="end"
-                  control={<Checkbox color="primary" />}
+                  control={
+                    <Checkbox 
+                      checked={values.fixedTransaction}
+                      onChange={handleGenericChecked}
+                      color="primary" 
+                      name="fixedTransaction"
+                    />
+                  }
                   label="Definir como transação fixa"
                   labelPlacement="end"
-                  onClick={() => { alert('Not Implemented') }}
                 />
-                <FormHelperText>Essa transação será definida como uma transação recorrente. A transação em questão será exibida como futura e também o gasto médio das transações com o mesmo nome irá entrar em métricas futuras.</FormHelperText>
+                <FormHelperText>A transação será espelhada nos próximos meses, assim aparecendo em transações futuras. Todas transações com o nome <b>{values.trx}</b> terão o gasto médio calculado e entrará nas métricas.</FormHelperText>
               </FormGroup>
 
               {/*<br />
@@ -228,8 +243,9 @@ export default function TemporaryDrawer(props) {
             <span >
 
               <ListItem button key={currentCategory.name} onClick={openViewCategoryDrawer}>
-                <ListItemIcon>{currentCategory.icon}</ListItemIcon>
+                <ListItemAvatar>{currentCategory.icon}</ListItemAvatar>
                 <ListItemText primary={currentCategory.name} />
+                <ListItemText style={{marginLeft: '15px'}} primary={<ArrowRightAltIcon/>}/>
               </ListItem>
 
               <FormControl component="fieldset">
@@ -245,7 +261,7 @@ export default function TemporaryDrawer(props) {
                     }
                     label="Sempre usar esta categoria"
                   />
-                  <FormHelperText>Com isso, essa categoria será escolhida automaticamente para todas transações com o mesmo nome.</FormHelperText>
+                  <FormHelperText>Com isso, a categoria <b>{currentCategory.name}</b> será escolhida automaticamente para todas transações com o nome <b>{values.trx}</b>.</FormHelperText>
                 </FormGroup>
 
               </FormControl>

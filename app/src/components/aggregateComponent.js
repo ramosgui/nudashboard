@@ -1,6 +1,33 @@
-import React, { Component } from "react";
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import MaterialTable from "material-table";
+import clsx from 'clsx';
+import { makeStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+
+import Checkbox from '@material-ui/core/Checkbox';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+
+import categoryIcons from './categoryComponent';
+import DrawerViewCategory from './drawerCategoryViewComponent'
+
 import Tooltip from '@material-ui/core/Tooltip';
 
 import { forwardRef } from 'react';
@@ -43,36 +70,10 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
 };
 
-class AggregateComponent extends Component {
-  constructor(props) {
-    super(props);
+export default function AgreggateComponent(props) {
+  const [data, setData] = useState([]);
 
-    this.state = {
-      data: []
-    }
-
-
-  };
-
-  componentDidUpdate(prevProps) {
-    var host = window.location.hostname;
-    if (prevProps.updateTableData !== this.props.updateTableData) {
-      axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
-        const result = res.data;
-        this.setState({ data: result })
-      });
-    }
-  }
-
-  componentDidMount() {
-    var host = window.location.hostname;
-    axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
-      const result = res.data;
-      this.setState({ data: result })
-    });
-  } 
-
-  amountPercent(percentile, value, msg) {
+  const amountPercent = (percentile, value, msg) => {
     if (percentile.includes('+') === true) {
       return <Tooltip title={<div><div>{msg}</div><div>{value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: red[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
     }
@@ -88,48 +89,55 @@ class AggregateComponent extends Component {
 
   }
 
-  render() {
-    return (
-      <div style={{ maxWidth: "100%" }}>
-        <MaterialTable
-          options={{
-            pageSize: 12,
-            pageSizeOptions: [],
-            search: false,
-            paging: false,
-            sorting: false,
-            draggable: false,
-            headerStyle: {
-              // backgroundColor: '#01579b',
-              // color: '#FFF'
-              fontWeight: 'bold'
-            }
-          }}
-          icons={tableIcons}
-          columns={[
-            { title: "Category", field: "category", cellStyle: {
-              width: 300,
-              minWidth: 100
-              },
-              headerStyle: {
-              width: 300,
-              minWidth: 100
-              }, },
-            { 
-              title: "Amount", 
-              field: "value",
-              render: rowData => <div>
-                <span>{rowData.value}</span>
-                <span>{this.amountPercent(rowData.percentileFull, rowData.lastFullValue, "Mês passado todo: ")}</span>
-              </div>
-            }
-          ]}
-          data={this.state.data}
-          title="Mês atual"
-        />
-      </div>
-    );
-  }
-}
+  useEffect(() => {
 
-export default AggregateComponent;
+    var host = window.location.hostname;
+    axios.get('http://'+host+':5050/transactions/category/amount').then(res => {
+      const result = res.data;
+      setData(result)
+    });
+
+  }, [props.updateData])
+
+
+  return (
+    <div style={{ maxWidth: "100%" }}>
+      <MaterialTable
+        options={{
+          pageSize: 12,
+          pageSizeOptions: [],
+          search: false,
+          paging: false,
+          sorting: false,
+          draggable: false,
+          headerStyle: {
+            // backgroundColor: '#01579b',
+            // color: '#FFF'
+            fontWeight: 'bold'
+          }
+        }}
+        icons={tableIcons}
+        columns={[
+          { title: "Category", field: "category", cellStyle: {
+            width: 300,
+            minWidth: 100
+            },
+            headerStyle: {
+            width: 300,
+            minWidth: 100
+            }, },
+          { 
+            title: "Amount", 
+            field: "value",
+            render: rowData => <div>
+              <span>{rowData.value}</span>
+              <span>{amountPercent(rowData.percentileFull, rowData.lastFullValue, "Mês passado todo: ")}</span>
+            </div>
+          }
+        ]}
+        data={data}
+        title="Mês atual"
+      />
+    </div>
+  );
+}

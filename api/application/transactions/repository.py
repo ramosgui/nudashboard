@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from dateutil.relativedelta import relativedelta
 
@@ -20,7 +21,24 @@ class TransactionRepository:
                                      charges=raw_trx.get('charges'), ref_id=raw_trx.get('ref_id'),
                                      category_map_collection=self._category_mapping_collection,
                                      title_mapping_collection=self._title_mapping_collection,
-                                     index=raw_trx.get('index'), type_=raw_trx['type'])
+                                     index=raw_trx.get('index'), type_=raw_trx['type'],
+                                     is_fixed=raw_trx.get('fixed', False))
+
+        # necessário para preencher os campos (mudar futuramente)
+        a = trx_model.category
+
+        same_category_check = False
+        if trx_model.category_by_trx_name and not trx_model.category_by_trx_id:
+            same_category_check = True
+
+        trx_model.same_category_check = same_category_check
+
+        same_name_check = False
+        if trx_model.title_by_name and not trx_model.title_by_id:
+            same_name_check = True
+
+        trx_model.same_name_check = same_name_check
+
         return trx_model
 
     def get_transaction(self, trx_id: str) -> TransactionModel:
@@ -39,26 +57,24 @@ class TransactionRepository:
 
         transactions = []
         for trx in result:
-            transaction_model = self._create_transaction_model(trx)
+            transactions.append(self._create_transaction_model(trx))
 
-            if transaction_model.name == 'Yankees':
-                print('ok')
+        return transactions
 
-            a = transaction_model.category
+    def get_transactions_by_name(self, name: str):
+        transactions = []
+        trx_ids = []
+        for trx in self._title_mapping_collection.find({'value': name}):
+            trx_ids.append(trx['_id'])
 
-            same_category_check = False
-            if transaction_model.category_by_trx_name and not transaction_model.category_by_trx_id:
-                same_category_check = True
+        trxs_by_id = self._transaction_collection.find({'_id': {'$in': trx_ids}})
+        for trx_id in trxs_by_id:
+            transactions.append(self._create_transaction_model(trx_id))
 
-            transaction_model.same_category_check = same_category_check
+        trxs_by_name = self._transaction_collection.find({'title': {'$in': trx_ids}})
+        for trx_name in trxs_by_name:
+            transactions.append(self._create_transaction_model(trx_name))
 
-            same_name_check = False
-            if transaction_model.title_by_name and not transaction_model.title_by_id:
-                same_name_check = True
-
-            transaction_model.same_name_check = same_name_check
-
-            transactions.append(transaction_model)
         return transactions
 
     def get_future_transactions(self):
@@ -120,6 +136,9 @@ class TransactionRepository:
         total = self._current_bill_info_collection.find_one({'_id': 'account_balance'})
         return total
 
+    def get_fixed_transactions(self, start_date: datetime, end_date: datetime) -> List[TransactionModel]:
+        transactions = self.get_transactions(start_date=start_date, end_date=end_date, custom_filters={'fixed': True})
+        return transactions
 
 
 # todo em cada preço colocar icone indicando se o gasto é maior ou menor do que os mesmos da categoria

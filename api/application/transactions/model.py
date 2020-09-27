@@ -6,7 +6,7 @@ from pymongo.collection import Collection
 class TransactionModel:
     def __init__(self, category_map_collection: Collection, title_mapping_collection: Collection, id_: str,
                  post_date: datetime, raw_title: str, raw_category: str, charges: int, amount: float, ref_id: str,
-                 index: int, type_: str):
+                 index: int, type_: str, is_fixed: bool):
 
         self._category_map_collection = category_map_collection
         self._title_mapping_collection = title_mapping_collection
@@ -20,6 +20,7 @@ class TransactionModel:
         self._amount = amount
         self.index = index
         self.type = type_
+        self.is_fixed = is_fixed
 
         self.title_by_id = None
         self.title_by_name = None

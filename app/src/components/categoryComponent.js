@@ -28,6 +28,7 @@ import { deepOrange } from '@material-ui/core/colors';
 import { blueGrey } from '@material-ui/core/colors';
 import { cyan } from '@material-ui/core/colors';
 import { lightGreen } from '@material-ui/core/colors';
+import { amber } from '@material-ui/core/colors';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import FastfoodIcon from '@material-ui/icons/Fastfood';
@@ -50,35 +51,28 @@ import HomeIcon from '@material-ui/icons/Home';
 
 import Avatar from '@material-ui/core/Avatar';
 
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+
+
 
 export const categoryIcons = {
-  Gordices: <Avatar style={{ backgroundColor: orange[500] }}><FastfoodIcon /></Avatar>,
 
-  Pets: <Avatar style={{ backgroundColor: indigo[500] }}><PetsIcon /></Avatar>,
-
-  Carro: <Avatar style={{ backgroundColor: yellow[600] }}><DriveEtaIcon /></Avatar>,
-
-  Lazer: <Avatar style={{ backgroundColor: blue[500] }}><BeachAccessIcon /></Avatar>,
-
-  Restaurante: <Avatar style={{ backgroundColor: deepOrange[500] }}><RestaurantMenuIcon /></Avatar>,
-
-  Compras: <Avatar style={{ backgroundColor: cyan[500] }}><LocalMallIcon /></Avatar>,
-
-  Serviços: <Avatar style={{ backgroundColor: grey[500] }}><FeaturedPlayListIcon /></Avatar>,
-
-  Supermercado: <Avatar style={{ backgroundColor: orange[500] }}><ShoppingCartIcon /></Avatar>,
-
+  Carro: <Avatar style={{ backgroundColor: amber[600] }}><DriveEtaIcon /></Avatar>,
   Casa: <Avatar style={{ backgroundColor: deepPurple[500] }}><HomeIcon /></Avatar>,
-
-  Presentes: <Avatar style={{ backgroundColor: pink[300] }}><CardGiftcardIcon /></Avatar>,
-
+  Compras: <Avatar style={{ backgroundColor: cyan[500] }}><LocalMallIcon /></Avatar>,
   Contas: <Avatar style={{ backgroundColor: blueGrey[500] }}><ReceiptIcon /></Avatar>,
   Educação: <Avatar style={{ backgroundColor: pink[500] }}><MenuBookIcon /></Avatar>,
-
+  Games: <Avatar style={{ backgroundColor: indigo[500] }}><SportsEsportsIcon /></Avatar>,
+  Gordices: <Avatar style={{ backgroundColor: amber[500] }}><FastfoodIcon /></Avatar>,
+  Lazer: <Avatar style={{ backgroundColor: blue[500] }}><BeachAccessIcon /></Avatar>,
   Outros: <Avatar style={{ backgroundColor: blueGrey[300] }}><LocalOfferIcon /></Avatar>,
+  Pets: <Avatar style={{ backgroundColor: indigo[300] }}><PetsIcon /></Avatar>,
+  Presentes: <Avatar style={{ backgroundColor: pink[300] }}><CardGiftcardIcon /></Avatar>,
+  Restaurante: <Avatar style={{ backgroundColor: orange[500] }}><RestaurantMenuIcon /></Avatar>,
+  Serviços: <Avatar style={{ backgroundColor: grey[500] }}><FeaturedPlayListIcon /></Avatar>,
+  Supermercado: <Avatar style={{ backgroundColor: red[500] }}><ShoppingCartIcon /></Avatar>,
 
   'Outras Rendas': <Avatar style={{ backgroundColor: lightGreen[500] }}><AttachMoneyIcon /></Avatar>,
-
   Remuneração: <Avatar style={{ backgroundColor: green[500] }}><AccountBalanceWalletIcon /></Avatar>,
 
   'Sem Categoria': <Avatar style={{ backgroundColor: pink['A400'] }}><AccountBalanceWalletIcon /></Avatar>,

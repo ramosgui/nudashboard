@@ -33,6 +33,7 @@ import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBullete
 import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
 import HelpIcon from '@material-ui/icons/Help';
+import Paper from '@material-ui/core/Paper';
 
 
 import DrawerCategory from './drawerCategoryComponent'
@@ -90,6 +91,12 @@ export default function TransactionsTableComponent(props) {
   const [drawerData, setDrawerData] = useState({});
   const [editDrawer, setEditDrawer] = useState(false);
 
+
+  var today = new Date();
+  const [startDate, setStartDate] = React.useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [endDate, setEndDate] = React.useState(today);
+
+
   const openEditDrawer = () => {
     setEditDrawer(true)
   }
@@ -126,14 +133,15 @@ export default function TransactionsTableComponent(props) {
 
   useEffect(() => {
     var host = window.location.hostname;
-    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': '2020-08-30', 'endDate': '2020-09-30' } }).then(res => {
+    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': startDate, 'endDate': endDate } }).then(res => {
       setTableData(res.data)
       props.setUpdateTableData(res.data)
     });
-  }, [drawer, editDrawer, props.syncModalState])
+  }, [drawer, props.syncModalState, props.updateData])
 
   return (
     <div>
+      <Paper><div style={{paddingLeft: '15px'}}><DatePicker setTableData={setTableData} startDate={startDate} endDate={endDate} setStartDate={setStartDate} setEndDate={setEndDate}/></div></Paper>
       <MaterialTable
       localization={{
         header : {
@@ -141,11 +149,13 @@ export default function TransactionsTableComponent(props) {
         }
       }}
         options={{
+          showTitle: false,
           draggable: false,
           pageSize: 10,
           pageSizeOptions: [5, 10, 15, 25, 50, 100],
           headerStyle: {
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            hidden: true,
           },
           actionsColumnIndex: -1
         }}
@@ -157,29 +167,20 @@ export default function TransactionsTableComponent(props) {
             render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
           },
           {
+            field: "isFixed",
+            editable: 'never',
+            render: rowData => <Tooltip arrow placement="right" title="Transação definida como recorrente.">{rowData.isFixed === true ? <LabelImportantIcon /> : <span/>}</Tooltip>
+          },
+          {
             title: "Nome",
             field: "title",
-            editComponent: props => (
-              <div>
-                <select id="type" onChange={e => this.change_title_type = e.target.value}>
-                  <option>-</option>
-                  <option value="trx">Apenas essa transação</option>
-                  <option value="same_name">Todas transações com o mesmo nome</option>
-                  <option value="charges">Todas as parcelas</option>
-                </select>
-                <input
-                  type="text"
-                  value={props.value}
-                  onChange={e => props.onChange(e.target.value)}
-                /></div>
-            ),
             render: rowData => <div>
               <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
-              <div style={{ float: 'left', marginTop: '-5px', marginLeft: '2px' }}><Tooltip title={
-                <div>
-                  <div>Nome mapeado automaticamente pela opção</div>
-                  <div>"Sempre usar este nome"</div>
-                </div>} arrow interactive>{rowData.sameNameCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : <div></div>}</Tooltip>
+              <div style={{ float: 'left', marginTop: '-5px', marginLeft: '2px' }}>
+                <Tooltip 
+                  title={<div><div>Nome mapeado automaticamente pela opção</div><div>"Sempre usar este nome"</div></div>} 
+                  arrow interactive>
+                    {rowData.sameNameCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : <div></div>}</Tooltip>
               </div>
             </div>
           },
@@ -226,22 +227,12 @@ export default function TransactionsTableComponent(props) {
           { title: "Data", field: "dt", editable: 'never' },
         ]}
         data={tableData}
-        components={{
-          Toolbar: props => (
-            <div>
-              <MTableToolbar {...props} /> 
-              <div style={{padding: '0px 10px'}}>
-                <DatePicker setTableData={setTableData}/>
-              </div>
-            </div>
-          ),
-        }}
         actions={[
-          {
+/*           {
             icon: () => <FormatListBulletedOutlinedIcon/>,
             tooltip: 'Categorizar',
             onClick: (event, rowData) => {openDrawer(); setDrawerData(rowData)}
-          },
+          }, */
           {
             icon: () => <EditIcon/>,
             tooltip: 'Editar',
@@ -266,10 +257,9 @@ export default function TransactionsTableComponent(props) {
         //      }, 1000)
         //    })
         //}}
-        title="Transações"
       />
-      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType}drawerData={drawerData}/>
-      <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType}drawerData={drawerData}/>
+      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData}/>
+      <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType} drawerData={drawerData} setUpdateData={props.setUpdateData} updateData={props.updateData}/>
     </div>
   );
 

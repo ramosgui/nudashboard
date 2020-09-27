@@ -31,18 +31,25 @@ const useStyles = makeStyles({
   },
 });
 
-export default function SimpleCard() {
+export default function SimpleCard(props) {
   const classes = useStyles();
-  const bull = <span className={classes.bullet}>•</span>;
+  /* const bull = <span className={classes.bullet}>•</span>; */
 
   const [data, setData] = useState({});
+
+  const [forecast, setForecast] = useState({});
 
   useEffect(() => {
     var host = window.location.hostname;
     axios.get('http://' + host + ':5050/transactions/transfer_in', {}).then(res => {
       setData(res.data)
     });
-  }, [])
+
+    axios.get('http://' + host + ':5050/transactions/fixed/amount', {'params': {'startDate':'2020-09-01T03:00:00.000Z', 'endDate': '2020-09-25T15:43:11.004Z'}}).then(res => {
+      setForecast(res.data)
+    });
+
+  }, [props.updateData])
 
   return (
     <Card className={classes.root}>
@@ -55,31 +62,28 @@ export default function SimpleCard() {
           <List dense={true}>
 
             <ListItem>
-              <ListItemText primary='Entrada' />
-              <ListItemSecondaryAction>
-                <ListItemText primary={data.positive} />
-              </ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Entrando' />
+              <ListItemText primary={data.positive} />
+              <ListItemText primary={'('+forecast.positive+')'} />
             </ListItem>
 
             <ListItem>
-              <ListItemText style={{ width: '10px' }} primary='Gastos Débito' />
-              <ListItemSecondaryAction>
-                <ListItemText primary={data.negative} />
-              </ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Saindo' />
+              <ListItemText primary={data.negative} />
+              <ListItemText primary={'('+forecast.negative+')'} />
             </ListItem>
 
             <ListItem>
-              <ListItemText primary='Fatura Atual' />
-              <ListItemSecondaryAction>
-                <ListItemText primary={data.fatura} />
-              </ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Fatura' />
+              <ListItemText primary={data.fatura} />
+              <ListItemText primary='(R$ -878,60)' />
             </ListItem>
+
             <Divider/>
             <ListItem>
-              <ListItemText primary='Total' />
-              <ListItemSecondaryAction>
-                <ListItemText primary={data.total} />
-              </ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Total' />
+              <ListItemText primary={data.total} />
+              <ListItemText primary={'('+forecast.total+')'} />
             </ListItem>
 
 

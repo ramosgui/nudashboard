@@ -110,6 +110,10 @@ export default function MiniDrawer() {
 
   const [syncModalState, setSyncModalState] = useState(0);
 
+  const [updateData, setUpdateData] = React.useState(false);
+
+
+
   const toggleSyncModalState = () => {
     setSyncModalState(!syncModalState)
   }
@@ -134,6 +138,10 @@ export default function MiniDrawer() {
     setOpen(false);
   };
 
+  const updateDataHandle = (status) => {
+    setUpdateData(!status)
+  }
+
   return (
     <div className={classes.root} style={{ height: '100%' }}>
       <div className='topo'>
@@ -156,7 +164,7 @@ export default function MiniDrawer() {
             <LastBillComponent />
           </Grid>
           <Grid item xs={12} sm={3}>
-            <BillComponent />
+            <BillComponent updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
             <AccountAmountComponent />
@@ -165,11 +173,11 @@ export default function MiniDrawer() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={3}>
-            <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState} />
+            <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState} updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={9}>
             <FutureTransactionsComponent /><br></br>
-            <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState} />
+            <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState} updateData={updateData} setUpdateData={setUpdateData}/>
           </Grid>
         </Grid>
       </div>

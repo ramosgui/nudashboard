@@ -11,24 +11,22 @@ import {
 
 export default function MaterialUIPickers(props) {
   // The first commit of Material-UI
-  const [selectedStartDate, setSelectedStartDate] = React.useState(new Date('2020-09-01T03:00:00'));
-  const [selectedEndDate, setSelectedEndDate] = React.useState(new Date());
+  
 
   const handleStartDateChange = (date) => {
-    setSelectedStartDate(date);
+    props.setStartDate(date);
     console.log(date)
   };
 
   const handleEndDateChange = (date) => {
-    setSelectedEndDate(date);
+    props.setEndDate(date);
     console.log(date)
   };
 
   const submitFunction = (event) => {
     var host = window.location.hostname;
-    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': selectedStartDate, 'endDate': selectedEndDate } }).then(res => {
+    axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': props.startDate, 'endDate': props.endDate } }).then(res => {
       props.setTableData(res.data)
-      event.preventDefault();
     });
   }
 
@@ -41,8 +39,8 @@ export default function MaterialUIPickers(props) {
           margin="normal"
           id="start-date"
           label="Data Inicial"
-          format="MM/dd/yyyy"
-          value={selectedStartDate}
+          format="dd/MM/yyyy"
+          value={props.startDate}
           onChange={handleStartDateChange}
           animateYearScrolling
         />
@@ -52,8 +50,8 @@ export default function MaterialUIPickers(props) {
           margin="normal"
           id="end-date"
           label="Data Final"
-          format="MM/dd/yyyy"
-          value={selectedEndDate}
+          format="dd/MM/yyyy"
+          value={props.endDate}
           onChange={handleEndDateChange}
           KeyboardButtonProps={{
             'aria-label': 'change date',
