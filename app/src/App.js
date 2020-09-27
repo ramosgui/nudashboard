@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
-import clsx from 'clsx';
-import Paper from '@material-ui/core/Paper';
 import './App.css';
 
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
+import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -17,7 +11,6 @@ import AggregateComponent from './components/aggregateComponent'
 import TableExampleComponent from './components/tableExampleComponent'
 import FutureTransactionsComponent from './components/futureTransactionsComponent'
 import SyncModalComponent from './components/syncModalComponent'
-import CardComponent from './components/cardComponent'
 import BillComponent from './components/billComponent'
 import LastBillComponent from './components/lastBillComponent'
 import AccountAmountComponent from './components/accountAmountComponent'
@@ -99,10 +92,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function MiniDrawer() {
   const classes = useStyles();
-  const theme = useTheme();
-
-  const [open, setOpen] = React.useState(false);
-
+  
   const [openSnackBar, setSnackBar] = React.useState(false);
 
   const [updateTableData, setUpdateTableData] = useState([]);
@@ -128,19 +118,6 @@ export default function MiniDrawer() {
     }
     setSnackBar(false);
   };
-
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
-
-  const updateDataHandle = (status) => {
-    setUpdateData(!status)
-  }
 
   return (
     <div className={classes.root} style={{ height: '100%' }}>

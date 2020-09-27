@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
 import { makeStyles } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Divider from '@material-ui/core/Divider';
 
 const useStyles = makeStyles({
@@ -41,11 +37,13 @@ export default function SimpleCard(props) {
 
   useEffect(() => {
     var host = window.location.hostname;
+    var today = new Date();
+
     axios.get('http://' + host + ':5050/transactions/transfer_in', {}).then(res => {
       setData(res.data)
     });
 
-    axios.get('http://' + host + ':5050/transactions/fixed/amount', {'params': {'startDate':'2020-09-01T03:00:00.000Z', 'endDate': '2020-09-25T15:43:11.004Z'}}).then(res => {
+    axios.get('http://' + host + ':5050/transactions/fixed/amount', {'params': {'startDate': new Date(today.getFullYear(), today.getMonth(), 1), 'endDate': today}}).then(res => {
       setForecast(res.data)
     });
 

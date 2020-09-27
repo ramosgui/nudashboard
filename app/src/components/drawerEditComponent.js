@@ -1,36 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'
 import clsx from 'clsx';
+
+import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
+
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-
 import Checkbox from '@material-ui/core/Checkbox';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 
 import categoryIcons from './categoryComponent';
 import DrawerViewCategory from './drawerCategoryViewComponent'
-
-import IconButton from '@material-ui/core/IconButton';
-
-import DeleteIcon from '@material-ui/icons/Delete';
-import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -127,7 +118,7 @@ export default function TemporaryDrawer(props) {
 
   const getCategoryIcon = (categoryName) => {
     var render = null
-    var q = Object.entries(categoryIcons)
+    Object.entries(categoryIcons)
       .map(([key, value]) => {
         if (categoryName === key) {
           render = value
@@ -152,9 +143,7 @@ export default function TemporaryDrawer(props) {
     icon = getCategoryIcon(props.drawerData.category)
     setCurrentCategory(icon)
 
-    console.log(props.drawerData)
-
-  }, [props.drawerState])
+  }, [props])
 
 
   return (

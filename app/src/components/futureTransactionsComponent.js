@@ -35,7 +35,7 @@ const categories = () => {
 const testCategoryFunction = (categoryName) => {
   var render = null
   var a = categories()
-  var q = Object.entries(a)
+  Object.entries(a)
   .map( ([key, value]) => {
     if (categoryName === key) {
       render = value

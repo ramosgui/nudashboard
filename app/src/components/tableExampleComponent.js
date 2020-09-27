@@ -1,9 +1,10 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import axios from 'axios'
-import MaterialTable, {MTableToolbar} from "material-table";
-import Tooltip from '@material-ui/core/Tooltip';
 
-import { forwardRef } from 'react';
+import MaterialTable from "material-table";
+
+import Tooltip from '@material-ui/core/Tooltip';
+import Paper from '@material-ui/core/Paper';
 
 import { green } from '@material-ui/core/colors';
 import { blue } from '@material-ui/core/colors';
@@ -24,17 +25,13 @@ import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
-import LabelOffIcon from '@material-ui/icons/LabelOff';
 import LabelImportantIcon from '@material-ui/icons/LabelImportant';
-import LabelIcon from '@material-ui/icons/Label';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
 import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
 import HelpIcon from '@material-ui/icons/Help';
-import Paper from '@material-ui/core/Paper';
-
 
 import DrawerCategory from './drawerCategoryComponent'
 import DrawerEditTransaction from './drawerEditComponent'
@@ -75,7 +72,7 @@ const amountFunction = (amount, category) => {
 
 const testCategoryFunction = (categoryName) => {
     var render = null
-    var q = Object.entries(categoryIcons)
+    Object.entries(categoryIcons)
     .map( ([key, value]) => {
       if (categoryName === key) {
         render = value
@@ -90,11 +87,9 @@ export default function TransactionsTableComponent(props) {
   const [drawer, setDrawer] = useState(false);
   const [drawerData, setDrawerData] = useState({});
   const [editDrawer, setEditDrawer] = useState(false);
-
-
-  var today = new Date();
-  const [startDate, setStartDate] = React.useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [endDate, setEndDate] = React.useState(today);
+  
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
 
   const openEditDrawer = () => {
@@ -133,11 +128,17 @@ export default function TransactionsTableComponent(props) {
 
   useEffect(() => {
     var host = window.location.hostname;
+    var today = new Date();
+
+    setStartDate(new Date(today.getFullYear(), today.getMonth(), 1))
+    setEndDate(today)
+
+
     axios.get('http://'+host+':5050/transactions', { 'params': { 'startDate': startDate, 'endDate': endDate } }).then(res => {
       setTableData(res.data)
       props.setUpdateTableData(res.data)
     });
-  }, [drawer, props.syncModalState, props.updateData])
+  }, [drawer, props])
 
   return (
     <div>

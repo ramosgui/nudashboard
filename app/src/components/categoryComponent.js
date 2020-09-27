@@ -1,30 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'
-import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
-import Chip from '@material-ui/core/Chip';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
+import React from 'react';
+import Avatar from '@material-ui/core/Avatar';
 
 import { green } from '@material-ui/core/colors';
 import { orange } from '@material-ui/core/colors';
-import { yellow } from '@material-ui/core/colors';
 import { grey } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
 import { red } from '@material-ui/core/colors';
 import { blue } from '@material-ui/core/colors';
 import { deepPurple } from '@material-ui/core/colors';
 import { indigo } from '@material-ui/core/colors';
-import { deepOrange } from '@material-ui/core/colors';
 import { blueGrey } from '@material-ui/core/colors';
 import { cyan } from '@material-ui/core/colors';
 import { lightGreen } from '@material-ui/core/colors';
@@ -39,18 +23,12 @@ import DriveEtaIcon from '@material-ui/icons/DriveEta';
 import LocalMallIcon from '@material-ui/icons/LocalMall';
 import FeaturedPlayListIcon from '@material-ui/icons/FeaturedPlayList';
 import CardGiftcardIcon from '@material-ui/icons/CardGiftcard';
-import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined';
 import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 import ReceiptIcon from '@material-ui/icons/Receipt';
-
 import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
-
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import BeachAccessIcon from '@material-ui/icons/BeachAccess';
 import HomeIcon from '@material-ui/icons/Home';
-
-import Avatar from '@material-ui/core/Avatar';
-
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 
 
