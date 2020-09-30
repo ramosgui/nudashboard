@@ -4,7 +4,7 @@ import axios from 'axios'
 import MaterialTable, { MTableToolbar } from "material-table";
 
 import Tooltip from '@material-ui/core/Tooltip';
-import Paper from '@material-ui/core/Paper';
+import Avatar from '@material-ui/core/Avatar';
 
 import { green } from '@material-ui/core/colors';
 import { blue } from '@material-ui/core/colors';
@@ -33,11 +33,14 @@ import EditIcon from '@material-ui/icons/Edit';
 import BlockIcon from '@material-ui/icons/Block';
 import HelpIcon from '@material-ui/icons/Help';
 
-import DrawerCategory from './drawerCategoryComponent'
-import DrawerEditTransaction from './drawerEditComponent'
-import categoryIcons from './categoryComponent';
-import DatePicker from './dateComponent';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 
+/* import DrawerCategory from './drawerCategoryComponent' */
+import DrawerEditTransaction from './drawerEditComponent'
+import DatePicker from './dateComponent';
+import { colors, icons } from './drawerCategoryViewComponent';
 
 
 const tableIcons = {
@@ -68,17 +71,6 @@ const amountFunction = (amount, category) => {
     return <div style={{ color: green[500] }}>{amount}</div>
   }
   return amount
-}
-
-const testCategoryFunction = (categoryName) => {
-  var render = null
-  Object.entries(categoryIcons)
-    .map(([key, value]) => {
-      if (categoryName === key) {
-        render = value
-      }
-    });
-  return <div><span style={{ float: 'left' }}>{render}</span><span style={{ float: 'left', color: 'rgba(0, 0, 0, 0.73);', marginLeft: '5px', paddingTop: '10px' }}>{categoryName}</span></div>
 }
 
 export default function TransactionsTableComponent(props) {
@@ -128,6 +120,29 @@ export default function TransactionsTableComponent(props) {
     return true;
   }
 
+  const getCategoryInfo = (rowData) => {
+    var categoryInfo = tableData.categories[rowData.category]
+    
+    if (!categoryInfo) {
+      var categoryInfo = {'name': rowData.category, 'color': ['grey', 500]}
+    }
+
+    return <ListItem>
+      <ListItemIcon style={{minWidth: '50px'}}>
+        <Avatar style={{ backgroundColor: colors[categoryInfo.color[0]][categoryInfo.color[1]] }} alt={rowData.category}>{icons[categoryInfo.icon]}</Avatar>
+      </ListItemIcon>
+      <ListItemText primary={<div>
+        <div style={{ float: 'left' }}>{rowData.category}</div>
+        <Tooltip title={
+              <div>
+                <div>{rowData.sameCategoryCheck ? "Nome mapeado automaticamente pela opção" : "Categoria default da transação"}</div>
+                <div>{rowData.sameCategoryCheck ? '"Sempre usar esta categoria"' : <div></div>}</div>
+              </div>} arrow interactive><div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>{rowData.sameCategoryCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : rowData.useRawCategory ? <HelpIcon style={{ fontSize: 15, color: pink[500] }} /> : <div></div>}</div></Tooltip>
+      </div>}/>
+    </ListItem>
+    
+  }
+
   useEffect(() => {
     var host = window.location.hostname;
     axios.get('http://' + host + ':5050/transactions', { 'params': { 'startDate': startDate, 'endDate': endDate } }).then(res => {
@@ -144,11 +159,11 @@ export default function TransactionsTableComponent(props) {
         components={{
           Toolbar: props => (
             <div>
-            <MTableToolbar {...props} />
-            <div style={{padding: '0px 20px'}}>
-            <DatePicker setTableData={setTableData} startDate={startDate} endDate={endDate} setStartDate={setStartDate} setEndDate={setEndDate} />
+              <MTableToolbar {...props} />
+              <div style={{ padding: '0px 20px' }}>
+                <DatePicker setTableData={setTableData} startDate={startDate} endDate={endDate} setStartDate={setStartDate} setEndDate={setEndDate} />
+              </div>
             </div>
-          </div>
           )
         }}
         localization={{
@@ -165,7 +180,7 @@ export default function TransactionsTableComponent(props) {
             fontWeight: 'bold'
           },
           cellStyle: {
-            padding: 10
+            padding: 1
           },
           actionsColumnIndex: -1
         }}
@@ -194,7 +209,7 @@ export default function TransactionsTableComponent(props) {
             field: "title",
             render: rowData => <div>
               <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
-              <div style={{ float: 'left', marginTop: '-5px', marginLeft: '2px' }}>
+              <div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>
                 <Tooltip
                   title={<div><div>Nome mapeado automaticamente pela opção</div><div>"Sempre usar este nome"</div></div>}
                   arrow interactive>
@@ -205,36 +220,7 @@ export default function TransactionsTableComponent(props) {
           {
             title: "Categoria",
             field: "category",
-            editComponent: props => (
-              <div>
-                <select id="type" onChange={e => this.a = e.target.value}>
-                  <option>-</option>
-                  <option value="trx">Apenas essa transação</option>
-                  <option value="same_name">Todas transações com o mesmo nome</option>
-                </select>
-                <input
-                  type="text"
-                  value={props.value}
-                  onChange={e => props.onChange(e.target.value)}
-                /></div>
-            ),
-            render: rowData => <div>
-              <div style={{ float: 'left' }}>
-
-                {testCategoryFunction(rowData.category)}
-
-
-
-
-              </div>
-              <div style={{ float: 'left', marginTop: '5px', marginLeft: '2px' }}><Tooltip title={
-                <div>
-                  <div>{rowData.sameCategoryCheck ? "Nome mapeado automaticamente pela opção" : "Categoria default da transação"}</div>
-                  <div>{rowData.sameCategoryCheck ? '"Sempre usar esta categoria"' : <div></div>}</div>
-                </div>} arrow interactive>{rowData.sameCategoryCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : rowData.useRawCategory ? <HelpIcon style={{ fontSize: 15, color: pink[500] }} /> : <div></div>}</Tooltip>
-              </div>
-            </div>
-            //lookup: { 34: "İstanbul", 63: "Şanlıurfa" },
+            render: rowData => getCategoryInfo(rowData)
           },
           {
             title: "Valor",
@@ -244,7 +230,7 @@ export default function TransactionsTableComponent(props) {
           },
           { title: "Data", field: "dt", editable: 'never' },
         ]}
-        data={tableData}
+        data={tableData.transactions}
         actions={[
           /*           {
                       icon: () => <FormatListBulletedOutlinedIcon/>,
@@ -276,8 +262,8 @@ export default function TransactionsTableComponent(props) {
       //    })
       //}}
       />
-      <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData} />
-      <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType} drawerData={drawerData} setUpdateData={props.setUpdateData} updateData={props.updateData} />
+      {/* {drawer === true ? <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData} /> : <div />} */}
+      {editDrawer === true ? <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType} drawerData={drawerData} setUpdateData={props.setUpdateData} updateData={props.updateData} categories={tableData.categories}/> : <div />}
     </div>
   );
 

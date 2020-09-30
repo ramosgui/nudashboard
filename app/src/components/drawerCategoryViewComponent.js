@@ -1,12 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import List from '@material-ui/core/List';
+import Avatar from '@material-ui/core/Avatar';
+import Divider from '@material-ui/core/Divider';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 
-import categoryIcons from './categoryComponent';
+import { green } from '@material-ui/core/colors';
+import { orange } from '@material-ui/core/colors';
+import { grey } from '@material-ui/core/colors';
+import { pink } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
+import { blue } from '@material-ui/core/colors';
+import { deepPurple } from '@material-ui/core/colors';
+import { indigo } from '@material-ui/core/colors';
+import { blueGrey } from '@material-ui/core/colors';
+import { cyan } from '@material-ui/core/colors';
+import { lightGreen } from '@material-ui/core/colors';
+import { amber } from '@material-ui/core/colors';
+
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
+import FastfoodIcon from '@material-ui/icons/Fastfood';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import PetsIcon from '@material-ui/icons/Pets';
+import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
+import DriveEtaIcon from '@material-ui/icons/DriveEta';
+import LocalMallIcon from '@material-ui/icons/LocalMall';
+import FeaturedPlayListIcon from '@material-ui/icons/FeaturedPlayList';
+import CardGiftcardIcon from '@material-ui/icons/CardGiftcard';
+import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import ReceiptIcon from '@material-ui/icons/Receipt';
+import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
+import BeachAccessIcon from '@material-ui/icons/BeachAccess';
+import HomeIcon from '@material-ui/icons/Home';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import LocalHospitalIcon from '@material-ui/icons/LocalHospital';
+import PersonIcon from '@material-ui/icons/Person';
+import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -14,6 +52,9 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     maxWidth: 360,
     backgroundColor: theme.palette.background.paper,
+  },
+  inline: {
+    display: 'inline',
   },
   chip: {
     margin: theme.spacing(0.5),
@@ -36,21 +77,95 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
+export const colors = {
+  'blueGrey': blueGrey,
+  'lightGreen': lightGreen,
+  'red': red,
+  'deepPurple': deepPurple,
+  'indigo': indigo,
+  'amber': amber,
+  'grey': grey,
+  'orange': orange,
+  'blue': blue,
+  'cyan': cyan,
+  'pink': pink,
+  'green': green,
+}
+
+
+export const icons = {
+  'LocalMallIcon': <LocalMallIcon />,
+  'ReceiptIcon': <ReceiptIcon />,
+  'MenuBookIcon': <MenuBookIcon />,
+  'ShoppingCartIcon': <ShoppingCartIcon />,
+  'HomeIcon': <HomeIcon />,
+  'PetsIcon': <PetsIcon />,
+  'LocalHospitalIcon': <LocalHospitalIcon />,
+  'DriveEtaIcon': <DriveEtaIcon />,
+  'RestaurantMenuIcon': <RestaurantMenuIcon />,
+  'SportsEsportsIcon': <SportsEsportsIcon />,
+  'FastfoodIcon': <FastfoodIcon />,
+  'BeachAccessIcon': <BeachAccessIcon />,
+  'FeaturedPlayListIcon': <FeaturedPlayListIcon />,
+  'PersonIcon': <PersonIcon />,
+  'LocalOfferIcon': <LocalOfferIcon />,
+  'CardGiftcardIcon': <CardGiftcardIcon />,
+  'AccountBalanceWalletIcon': <AccountBalanceWalletIcon />,
+  'AttachMoneyIcon': <AttachMoneyIcon />,
+  /*   'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>,
+    'LocalOfferIcon': <LocalOfferIcon/>, */
+}
+
 
 export default function TemporaryDrawer(props) {
   const classes = useStyles();
 
-  const updateCategory = (categoryName) => {
-    var render = null
-    Object.entries(categoryIcons)
-    .map( ([key, value]) => {
-      if (categoryName === key) {
-        render = value
-      }
-    });
-    props.setCurrentCategory({'icon': render, 'name': categoryName})
+  const updateCategory = (category) => {
+    console.log(category)
+    props.setCurrentCategory(category)
     props.closeDrawer()
   }
+
+
+  const getCategories = (categoryType) => {
+    var categories = []
+    for (var key in props.categories) {
+      var category = props.categories[key]
+      category['name'] = key
+
+      if (category.type === categoryType) {
+        categories.push(category)
+      }
+    }
+    console.log(categories)
+    return categories
+  }
+
+  const essencialCategories = [
+    { 'name': 'Contas residenciais', 'icon': <ReceiptIcon />, 'color': blueGrey[500] },
+    { 'name': 'Educação', 'icon': <MenuBookIcon />, 'color': lightGreen[400] },
+    { 'name': 'Mercado', 'icon': <ShoppingCartIcon />, 'color': red[500] },
+    { 'name': 'Moradia', 'icon': <HomeIcon />, 'color': deepPurple[500] },
+    { 'name': 'Saúde', 'icon': <LocalHospitalIcon />, 'color': red[300] },
+    { 'name': 'Transporte', 'icon': <DriveEtaIcon />, 'color': amber[600] }
+  ]
+
+
+  const notClassifiedCategories = [
+  ]
+
+  const incomeCategories = [
+  ]
+
+  /*   useEffect(() => {
+      console.log(props)
+      getCategories('Estilo de vida')
+    }, []) */
 
   return (
     <div>
@@ -60,12 +175,119 @@ export default function TemporaryDrawer(props) {
           role="presentation"
         >
 
-          {Object.entries(categoryIcons).map(([k, v]) => (
-            <ListItem button key={k} onClick={() => { updateCategory(k) }}>
-              <ListItemIcon>{v}</ListItemIcon>
-              <ListItemText primary={k} />
-            </ListItem>
-          ))}
+          <div className={classes.section1}>
+            <Grid container alignItems="center">
+              <Grid button >
+                <ArrowLeftIcon style={{ height: '40px', width: '40px' }} onClick={props.closeDrawer} />
+              </Grid>
+              <Grid button xs style={{ textAlign: 'center' }}>
+                <Typography button gutterBottom variant="h7" style={{ fontWeight: 'bold' }}>
+                  Alterar categoria
+          </Typography>
+              </Grid>
+            </Grid>
+          </div>
+
+          <List
+            component="nav"
+            aria-labelledby="nested-list-subheader"
+            subheader={
+              <ListSubheader component="div" id="nested-list-subheader">
+                Essencial
+        </ListSubheader>
+            }
+            className={classes.root}
+          >
+
+            {getCategories('Gastos essenciais').map((category) => {
+              return (
+                <ListItem button onClick={() => updateCategory(category)}>
+                  <ListItemIcon>
+                    <Avatar style={{ backgroundColor: colors[category.color[0]][category.color[1]] }} alt={category.name}>{icons[category.icon]}</Avatar>
+                  </ListItemIcon>
+                  <ListItemText primary={category.name} />
+                </ListItem>
+              )
+            })}
+
+          </List>
+
+          <Divider />
+
+          <List
+            component="nav"
+            aria-labelledby="nested-list-subheader"
+            subheader={
+              <ListSubheader component="div" id="nested-list-subheader">
+                Estilo de vida
+        </ListSubheader>
+            }
+            className={classes.root}
+          >
+
+            {getCategories('Estilo de vida').map((category) => {
+              return (
+                <ListItem button onClick={() => updateCategory(category)}>
+                  <ListItemIcon>
+                    <Avatar style={{ backgroundColor: colors[category.color[0]][category.color[1]] }} alt={category.name}>{icons[category.icon]}</Avatar>
+                  </ListItemIcon>
+                  <ListItemText primary={category.name} />
+                </ListItem>
+              )
+            })}
+
+
+          </List>
+
+          <Divider />
+
+          <List
+            component="nav"
+            aria-labelledby="nested-list-subheader"
+            subheader={
+              <ListSubheader component="div" id="nested-list-subheader">
+                Não classificado
+        </ListSubheader>
+            }
+            className={classes.root}
+          >
+
+            {getCategories('Nao classificado').map((category) => {
+              return (
+                <ListItem button onClick={() => updateCategory(category)}>
+                  <ListItemIcon>
+                    <Avatar style={{ backgroundColor: colors[category.color[0]][category.color[1]] }} alt={category.name}>{icons[category.icon]}</Avatar>
+                  </ListItemIcon>
+                  <ListItemText primary={category.name} />
+                </ListItem>
+              )
+            })}
+
+          </List>
+
+          <Divider />
+
+          <List
+            component="nav"
+            aria-labelledby="nested-list-subheader"
+            subheader={
+              <ListSubheader component="div" id="nested-list-subheader">Renda</ListSubheader>
+            }
+            className={classes.root}
+          >
+
+            {getCategories('Renda').map((category) => {
+              return (
+                <ListItem button onClick={() => updateCategory(category)}>
+                  <ListItemIcon>
+                    <Avatar style={{ backgroundColor: colors[category.color[0]][category.color[1]] }} alt={category.name}>{icons[category.icon]}</Avatar>
+                  </ListItemIcon>
+                  <ListItemText primary={category.name} />
+                </ListItem>
+              )
+            })}
+
+          </List>
 
         </div>
       </Drawer>

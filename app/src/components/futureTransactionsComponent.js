@@ -14,7 +14,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import categoryIcons from './categoryComponent';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,20 +26,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const categories = () => {
+/* const categories = () => {
   var a = categoryIcons
   return a;
-}
+} */
 
 const testCategoryFunction = (categoryName) => {
   var render = null
-  var a = categories()
+/*   var a = categories()
   Object.entries(a)
   .map( ([key, value]) => {
     if (categoryName === key) {
       render = value
     }
-  });
+  }); */
     return render
 }
 

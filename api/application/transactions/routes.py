@@ -65,7 +65,19 @@ def get_transactions():
     transactions = service.get_transactions(start_date=params['startDate'], end_date=params['endDate'])
     formatted_transactions = _format_transactions(transactions)
 
-    return jsonify(sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)), 200
+    categories_col = current_app.app_config.mongodb.categories_collection
+
+    categories = {}
+    for category in categories_col.find({}):
+        categories[category['_id']] = {
+            'icon': category['icon'],
+            'color': category['color'],
+            'type': category['type']
+        }
+
+    formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
+
+    return jsonify({'transactions': formatted_transactions, 'categories': categories}), 200
 
 
 @transaction_blueprint.route('/future_transactions', methods=['GET'])
@@ -267,6 +279,37 @@ def get_fixed_transactions_amount():
         'total': _format_amount(positive_amount + (negative_amount * -1))
     }), 200
 
+
+@transaction_blueprint.route('/categories', methods=['GET'])
+def get_categories():
+    categories_col = current_app.app_config.mongodb.categories_collection
+
+    categories = []
+    for category in categories_col.find({}):
+        categories.append({
+            'name': category['_id'],
+            'icon': category['icon'],
+            'color': category['color'],
+            'type': category['type']
+        })
+
+    return jsonify(categories)
+
+
+@transaction_blueprint.route('/category', methods=['GET'])
+def get_category_by_name():
+    params = dict(request.args)
+
+    categories_col = current_app.app_config.mongodb.categories_collection
+
+    category = categories_col.find_one({'_id': params['name']})
+
+    return jsonify({
+        'name': category['_id'],
+        'icon': category['icon'],
+        'color': category['color'],
+        'type': category['type']
+    })
 
 # TODO PARA TRANSAÇÕES COM MAPEADAS ATRAVES DO NOME E DA PARCELA COLOCAR UM ICONE DE INTERROGAÇÃO EXPLICANDO
 

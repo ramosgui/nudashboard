@@ -6,6 +6,7 @@ import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
+import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,8 +21,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 
-import categoryIcons from './categoryComponent';
-import DrawerViewCategory from './drawerCategoryViewComponent'
+import DrawerViewCategory, {colors, icons} from './drawerCategoryViewComponent'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -67,7 +67,7 @@ export default function TemporaryDrawer(props) {
   });
 
   const [viewCategoryDrawer, setViewCategoryDrawer] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState({})
+  const [currentCategory, setCurrentCategory] = useState({'color': ['grey', 500]})
 
   const openViewCategoryDrawer = () => {
     setViewCategoryDrawer(true)
@@ -116,18 +116,19 @@ export default function TemporaryDrawer(props) {
     });
   };
 
-  const getCategoryIcon = (categoryName) => {
-    var render = null
-    Object.entries(categoryIcons)
-      .map(([key, value]) => {
-        if (categoryName === key) {
-          render = value
-        }
-      });
-    return { 'icon': render, 'name': categoryName }
-  }
 
   useEffect(() => {
+
+    if (props.categories[props.drawerData.category]) {
+      var category = props.categories[props.drawerData.category]
+      category['name'] = props.drawerData.category
+      
+    } else {
+      var category = {'name': props.drawerData.category, 'color': ['grey', 500]}
+    }
+
+    
+    setCurrentCategory(category)
 
     const auxValues = {
       'id': props.drawerData.id, 
@@ -138,12 +139,10 @@ export default function TemporaryDrawer(props) {
       'fixedTransaction': props.drawerData.isFixed
     }
     setValues(auxValues);
-    
-    var icon = null
-    icon = getCategoryIcon(props.drawerData.category)
-    setCurrentCategory(icon)
 
-  }, [props])
+    console.log(props.categories)
+
+  }, [props.drawerState])
 
 
   return (
@@ -231,8 +230,10 @@ export default function TemporaryDrawer(props) {
           <div className={classes.section1}>
             <span >
 
-              <ListItem button key={currentCategory.name} onClick={openViewCategoryDrawer}>
-                <ListItemAvatar>{currentCategory.icon}</ListItemAvatar>
+              <ListItem button key={props.drawerData.category} onClick={openViewCategoryDrawer}>
+                <ListItemAvatar>
+                  <Avatar style={{ backgroundColor: colors[currentCategory.color[0]][currentCategory.color[1]] }} alt={currentCategory.name}>{icons[currentCategory.icon]}</Avatar>
+                </ListItemAvatar>
                 <ListItemText primary={currentCategory.name} />
                 <ListItemText style={{marginLeft: '15px'}} primary={<ArrowRightAltIcon/>}/>
               </ListItem>
@@ -272,8 +273,9 @@ export default function TemporaryDrawer(props) {
 
         </div>
 
+
       </div>
-      <DrawerViewCategory drawerState={viewCategoryDrawer} openDrawer={openViewCategoryDrawer} closeDrawer={closeViewCategoryDrawer} setCurrentCategory={setCurrentCategory} />
+      <DrawerViewCategory drawerState={viewCategoryDrawer} openDrawer={openViewCategoryDrawer} closeDrawer={closeViewCategoryDrawer} setCurrentCategory={setCurrentCategory} categories={props.categories}/>
 
     </Drawer>
 

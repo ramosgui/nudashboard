@@ -10,7 +10,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 import Checkbox from '@material-ui/core/Checkbox';
 
-import categoryIcons from './categoryComponent';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -81,12 +80,12 @@ export default function TemporaryDrawer(props) {
               name="checkedB"
               color="primary"
             />Sempre usar essa categoria (Sempre que tiver uma transação com esse nome, essa categoria já vai ser escolhida.)
-      {Object.entries(categoryIcons).map(([k, v]) => (
+{/*       {Object.entries(categoryIcons).map(([k, v]) => (
               <ListItem button key={k} onClick={() => { updateCategory(k) }}>
                 <ListItemIcon>{v}</ListItemIcon>
                 <ListItemText primary={k} />
               </ListItem>
-            ))}</div>
+            ))} */}</div>
         </Drawer>
 
     </div>
