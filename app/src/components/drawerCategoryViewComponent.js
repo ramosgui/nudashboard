@@ -178,10 +178,10 @@ export default function TemporaryDrawer(props) {
           <div className={classes.section1}>
             <Grid container alignItems="center">
               <Grid button >
-                <ArrowLeftIcon style={{ height: '40px', width: '40px' }} onClick={props.closeDrawer} />
+                <ArrowLeftIcon style={{ height: '40px', width: '40px', cursor: 'pointer', marginTop: '-6px' }} onClick={props.closeDrawer} />
               </Grid>
-              <Grid button xs style={{ textAlign: 'center' }}>
-                <Typography button gutterBottom variant="h7" style={{ fontWeight: 'bold' }}>
+              <Grid xs style={{ textAlign: 'center' }}>
+                <Typography button gutterBottom variant="h6" style={{ fontWeight: 'bold', marginLeft: '-10px'}}>
                   Alterar categoria
           </Typography>
               </Grid>

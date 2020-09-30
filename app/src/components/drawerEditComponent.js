@@ -21,6 +21,8 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 
+import CloseIcon from '@material-ui/icons/Close';
+
 import DrawerViewCategory, {colors, icons} from './drawerCategoryViewComponent'
 
 
@@ -154,17 +156,15 @@ export default function TemporaryDrawer(props) {
       >
 
         <div className={classes.root}>
-          <div className={classes.section1}>
+        <div className={classes.section1}>
             <Grid container alignItems="center">
-              <Grid item>
-                <Typography gutterBottom variant="h6">
-                  X
-            </Typography>
+              <Grid button >
+                <CloseIcon style={{ height: '40px', width: '40px', cursor: 'pointer', marginTop: '-6px' }} onClick={props.closeDrawer} />
               </Grid>
-              <Grid item xs>
-                <Typography gutterBottom variant="h6">
+              <Grid xs style={{ textAlign: 'center' }}>
+                <Typography button gutterBottom variant="h6" style={{ fontWeight: 'bold', marginLeft: '-10px'}}>
                   Editar Transação
-            </Typography>
+          </Typography>
               </Grid>
             </Grid>
             <TextField id="transaction_name" name='trx' label="Nome" defaultValue={props.drawerData.title} onChange={handleChange} />
