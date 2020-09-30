@@ -134,23 +134,22 @@ class TransactionService:
         if negative_transactions:
             negative_value = sum(negative_transactions)
 
-        bill_amount = self._repository.get_bill_amount(bill)
+        bill_amount, bill_state = self._repository.get_bill_amount(bill)
 
-        total = positive_value - (negative_value + bill_amount)
-
-        return positive_value, negative_value, bill_amount, total
+        return positive_value, negative_value, bill_amount, bill_state
 
     def get_amount(self):
         end_date = datetime.utcnow()
         start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        bill = 'open_bill'
+        bill = 'current_bill'
 
-        positive_value, negative_value, bill_amount, bill_total = self.get_balance(bill=bill, start_date=start_date,
-                                                                                   end_date=end_date)
+        positive_value, negative_value, bill_amount, bill_state = self.get_balance(bill=bill,
+                                                                                                start_date=start_date,
+                                                                                                end_date=end_date)
 
         account_total = self._repository.get_account_amount()
 
-        return account_total, bill_total
+        return account_total, positive_value, negative_value, bill_amount, bill_state
 
     def get_fixed_transactions(self, start_date: datetime, end_date: datetime) -> List[TransactionModel]:
         return self._repository.get_fixed_transactions(start_date=start_date, end_date=end_date)
@@ -176,3 +175,7 @@ class TransactionService:
             new_negative_amount += sum([x.amount for x in transactions]) / len(transactions)
 
         return new_positive_amount, new_negative_amount
+
+    def get_bill(self, bill: str):
+        amount, _ = self._repository.get_bill_amount(bill)
+        return amount

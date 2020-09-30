@@ -190,15 +190,17 @@ def transfer_in_transactions():
 
     end_date = datetime.utcnow()
     start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    bill = 'open_bill'
+    bill = 'current_bill'
 
-    positive_transactions, negative_transactions, bill_amount, total = service.get_balance(start_date=start_date,
+    positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
                                                                                            end_date=end_date,
                                                                                            bill=bill)
 
+    total = positive_value - (negative_value + bill_amount)
+
     return jsonify({
-        'positive': _format_amount(positive_transactions),
-        'negative': _format_amount(negative_transactions * -1),
+        'positive': _format_amount(positive_value),
+        'negative': _format_amount(negative_value * -1),
         'fatura': _format_amount(bill_amount * -1),
         'total': _format_amount(total)
     }), 200
@@ -214,15 +216,20 @@ def last_transfer_in_transactions():
 
     end_date = start_date - timedelta(microseconds=1)
     start_date = start_date - relativedelta(months=1)
-    bill = 'latest_bill'
+    bill = 'lastest_bill'
 
-    positive_transactions, negative_transactions, bill_amount, total = service.get_balance(start_date=start_date,
-                                                                                           end_date=end_date,
-                                                                                           bill=bill)
+    positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
+                                                                                  end_date=end_date,
+                                                                                  bill=bill)
+
+    total = positive_value - (negative_value + bill_amount)
+
+    if isinstance(bill_amount, int):
+        bill_amount = _format_amount(bill_amount * -1)
 
     return jsonify({
-        'positive': _format_amount(positive_transactions),
-        'negative': _format_amount(negative_transactions * -1),
+        'positive': _format_amount(positive_value),
+        'negative': _format_amount(negative_value * -1),
         'fatura': _format_amount(bill_amount * -1),
         'total': _format_amount(total)
     }), 200
@@ -233,14 +240,28 @@ def account_amount():
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
 
-    account_total, bill_total = service.get_amount()
+    account_total, positive_value, negative_value, bill_amount, bill_state = service.get_amount()
     if account_total is None:
         account_total = {'value': 0}
 
+    if bill_state != 'open':
+        bill_out = 'FATURA PAGA'
+        out_raw = positive_value - negative_value
+        out = _format_amount(out_raw)
+
+        total = _format_amount(account_total['value'])
+    else:
+        bill_out = _format_amount(bill_amount)
+        out_raw = positive_value - (negative_value + bill_amount)
+        out = _format_amount(out_raw)
+
+        total = _format_amount(account_total['value'] + out_raw)
+
     return jsonify({
         'account_total': _format_amount(account_total['value']),
-        'bill_total': _format_amount(bill_total),
-        'total': _format_amount(account_total['value'] + bill_total)
+        'out': out,
+        'bill_out': bill_out,
+        'total': total
     }), 200
 
 
@@ -270,12 +291,15 @@ def get_fixed_transactions_amount():
     start_date = _convert_dt_str_to_dt(params['startDate'])
     end_date = _convert_dt_str_to_dt(params['endDate'])
 
+    bill_amount = service.get_bill('future_bill')
+
     positive_amount, negative_amount = service.get_amount_from_fixed_transactions(start_date=start_date,
                                                                                   end_date=end_date)
 
     return jsonify({
         'positive': _format_amount(positive_amount),
         'negative': _format_amount(negative_amount * -1),
+        'fatura': _format_amount(bill_amount * -1),
         'total': _format_amount(positive_amount + (negative_amount * -1))
     }), 200
 

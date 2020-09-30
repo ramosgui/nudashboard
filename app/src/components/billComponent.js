@@ -73,9 +73,9 @@ export default function SimpleCard(props) {
             </ListItem>
 
             <ListItem>
-              <ListItemText style={{width: '80px'}} primary='Fatura' />
+              <ListItemText style={{width: '80px'}} primary='Fatura do mês' />
               <ListItemText primary={data.fatura} />
-              <ListItemText primary='(R$ -878,60)' />
+              <ListItemText primary={'('+forecast.fatura+')'} />
             </ListItem>
 
             <Divider/>

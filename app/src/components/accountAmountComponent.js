@@ -60,9 +60,9 @@ export default function SimpleCard() {
             </ListItem>
 
             <ListItem>
-              <ListItemText style={{ width: '10px' }} primary='Saindo' />
+              <ListItemText style={{ width: '10px' }} primary='Fatura do mês' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.bill_total} />
+                <ListItemText primary={data.bill_out} />
               </ListItemSecondaryAction>
             </ListItem>
 

@@ -82,7 +82,7 @@ def sync():
     bill_info = None
     bills = nu.get_bills()
     for bill in bills:
-        if bill['state'] == 'open':
+        if datetime.utcnow().strftime('%Y-%m') in bill['summary']['close_date']:
             bill_info = bill
 
     current_bill_info_collection.update_one(filter={'_id': 'account_balance'},
@@ -91,20 +91,36 @@ def sync():
 
     if bill_info:
         latest_bill = bills[bills.index(bill_info)+1]
+        future_bill = bills[bills.index(bill_info)-1]
 
-        current_bill_info_collection.update_one(filter={'_id': 'open_bill'},
-                                                update={'$set': {'total_balance': bill_info['summary']['total_balance']}},
+        current_bill_info_collection.update_one(filter={'_id': 'current_bill'},
+                                                update={'$set': {
+                                                    'total_balance': bill_info['summary']['total_balance'],
+                                                    'state': bill_info['state']
+                                                }},
                                                 upsert=True)
 
-        current_bill_info_collection.update_one(filter={'_id': 'latest_bill'},
-                                                update={'$set': {'total_balance': latest_bill['summary']['total_balance']}},
+        current_bill_info_collection.update_one(filter={'_id': 'lastest_bill'},
+                                                update={'$set': {
+                                                    'total_balance': latest_bill['summary']['total_balance'],
+                                                    'state': latest_bill['state']
+                                                }},
+                                                upsert=True)
+
+        current_bill_info_collection.update_one(filter={'_id': 'future_bill'},
+                                                update={'$set': {
+                                                    'total_balance': future_bill['summary']['total_balance'],
+                                                    'state': future_bill['state']
+                                                }},
                                                 upsert=True)
 
         current_bill_info_collection.update_one(filter={'_id': 'latest_update_dt'},
-                                                update={'$set': {'dt': datetime.utcnow().isoformat()}},
+                                                update={'$set': {
+                                                    'dt': datetime.utcnow().isoformat()}
+                                                },
                                                 upsert=True)
 
-        open_bill_id = str(uuid.uuid4())
+        current_bill_id = str(uuid.uuid4())
         latest_bill_id = latest_bill['id']
 
         open_bill_transactions = nu.get_bill_details(bill_info)['bill']['line_items']
@@ -120,8 +136,7 @@ def sync():
                 pass
 
         for trx in open_bill_transactions:
-            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=open_bill_id)
-            print(filter_, update_)
+            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=current_bill_id)
             if filter_:
                 try:
                     transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
@@ -131,7 +146,6 @@ def sync():
 
         for trx in latest_bill_transactions:
             filter_, update_ = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
-            print(filter_, update_)
             if filter_:
                 try:
                     transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
