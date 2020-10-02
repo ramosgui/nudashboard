@@ -46,7 +46,7 @@ export default function SimpleCard() {
     <Card className={classes.root}>
       <CardContent>
         <Typography className={classes.title} color="textSecondary" gutterBottom>
-          Overview do Mês Passado
+          Overview do mês passado
         </Typography>
         <Typography variant="body2" component="p">
 

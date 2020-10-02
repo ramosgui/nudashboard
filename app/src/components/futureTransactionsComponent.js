@@ -6,14 +6,16 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-
+import Avatar from '@material-ui/core/Avatar';
 
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+
+import { colors, icons } from './drawerCategoryViewComponent';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,8 +33,11 @@ const useStyles = makeStyles((theme) => ({
   return a;
 } */
 
-const testCategoryFunction = (categoryName) => {
+const testCategoryFunction = (categoryName, categories) => {
   var render = null
+
+  var categoryInfo = categories[categoryName]
+
 /*   var a = categories()
   Object.entries(a)
   .map( ([key, value]) => {
@@ -40,7 +45,7 @@ const testCategoryFunction = (categoryName) => {
       render = value
     }
   }); */
-    return render
+    return <Avatar style={{ backgroundColor: colors[categoryInfo.color[0]][categoryInfo.color[1]] }} alt={categoryName}>{icons[categoryInfo.icon]}</Avatar>
 }
 
 export default function SimpleAccordion(props) {
@@ -80,11 +85,11 @@ export default function SimpleAccordion(props) {
                 <ListItem>
                 <ListItemAvatar>
 
-                  {testCategoryFunction(transaction.category)}
+                  {testCategoryFunction(transaction.category, tableData.categories)}
 
                 </ListItemAvatar>
                 <ListItemText  style={{width: '1px'}} primary={transactionName(transaction)} secondary={transaction.category}/>
-                <ListItemText primary={transaction.amount} secondary={transaction.type}/>
+                <ListItemText primary={'R$ ' + transaction.amount} secondary={transaction.type}/>
                 <ListItemText primary={transaction.dt}/>
               </ListItem>
                 

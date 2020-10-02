@@ -9,6 +9,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { green } from '@material-ui/core/colors';
 import { blue } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
@@ -65,12 +66,12 @@ const tableIcons = {
 };
 
 const amountFunction = (amount, category) => {
-  if (amount.includes('-')) {
+  /* if (amount.includes('-')) {
     return <div style={{ color: green[500] }}>{amount}</div>
-  } else if (category === 'TransferInEvent') {
-    return <div style={{ color: green[500] }}>{amount}</div>
+  } */ if (category === 'TransferInEvent') {
+    return <div style={{ color: green[500] }}>{'R$ ' + amount}</div>
   }
-  return amount
+  return <div>{'R$ ' + amount}</div>
 }
 
 export default function TransactionsTableComponent(props) {
@@ -122,7 +123,7 @@ export default function TransactionsTableComponent(props) {
 
   const getCategoryInfo = (rowData) => {
     var categoryInfo = tableData.categories[rowData.category]
-    
+
     if (!categoryInfo) {
       var categoryInfo = {'name': rowData.category, 'color': ['grey', 500]}
     }
@@ -193,7 +194,11 @@ export default function TransactionsTableComponent(props) {
             cellStyle: {
               width: '3%'
             },
-            render: rowData => <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
+            render: rowData => {
+              if (rowData.type) {
+                return <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
+              }
+            }
           },
           {
             title: "Fixado",
@@ -202,7 +207,13 @@ export default function TransactionsTableComponent(props) {
             cellStyle: {
               width: '3%'
             },
-            render: rowData => <Tooltip arrow placement="right" title="Transação definida como recorrente.">{rowData.isFixed === true ? <LabelImportantIcon /> : <span />}</Tooltip>
+            render: rowData => {
+              if (rowData.isFixed === true) {
+                return <Tooltip arrow placement="right" title="Transação definida como recorrente."><LabelImportantIcon style={{ color: green[500] }}/></Tooltip>
+              } else if (rowData.isFixed === 'not') {
+                return <Tooltip arrow placement="right" title="Transação definida como recorrente não realizada no período selecionado."><LabelImportantIcon style={{ color: red[500] }}/></Tooltip>
+              }
+            }
           },
           {
             title: "Nome",
@@ -226,7 +237,11 @@ export default function TransactionsTableComponent(props) {
             title: "Valor",
             field: "amount",
             editable: 'never',
-            render: rowData => amountFunction(rowData.amount, rowData.rawCategory)
+            render: rowData => {
+              if (rowData.amount) {
+                return amountFunction(rowData.amount, rowData.rawCategory)
+              }
+            }
           },
           { title: "Data", field: "dt", editable: 'never' },
         ]}

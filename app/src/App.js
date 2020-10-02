@@ -15,6 +15,7 @@ import BillComponent from './components/billComponent'
 import LastBillComponent from './components/lastBillComponent'
 import AccountAmountComponent from './components/accountAmountComponent'
 import LastUpdateDate from './components/lastUpdateComponent'
+import ForecastComponent from './components/forecastComponent'
 
 const drawerWidth = 240;
 
@@ -144,7 +145,7 @@ export default function MiniDrawer() {
             <BillComponent updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <AccountAmountComponent />
+            <ForecastComponent updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
             <AccountAmountComponent />

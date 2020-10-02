@@ -37,7 +37,41 @@ class TransactionService:
         else:
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
-        return self._repository.get_transactions(start_date=start_dt, end_date=end_dt)
+        transactions = self._repository.get_transactions(start_date=start_dt, end_date=end_dt)
+
+        fixed_transactions = self._repository.get_fixed_transactions_new()
+
+        transaction_by_names = {}
+        for transaction in transactions:
+            transaction_by_names[transaction.name] = transaction
+
+        fixed_transactions_to_return = []
+        for fixed_transaction in fixed_transactions:
+
+            if fixed_transaction in transaction_by_names:
+                print(fixed_transaction)
+
+            else:
+                transactions_by_name = self._repository.get_transactions_by_name(fixed_transaction)
+                new_positive_amount = sum([x.amount for x in transactions_by_name]) / len(transactions_by_name)
+
+                # trx_model = TransactionModel(category_map_collection=self._repository._category_mapping_collection,
+                #                              title_mapping_collection=self._repository._title_mapping_collection,
+                #                              id_=None, post_date=datetime.utcnow(), raw_title=fixed_transaction,
+                #                              raw_category=transactions_by_name[-1].raw_category, charges=None, amount=new_positive_amount, ref_id=None,
+                #                              index=None, type_=transactions_by_name[-1].type, is_fixed='not')
+
+                trx_model = self._repository._create_transaction_model({
+                    '_id': transactions_by_name[-1].id, 'post_date': datetime.utcnow(), 'title': transactions_by_name[-1].raw_title,
+                    'category': transactions_by_name[-1].raw_category, 'amount': new_positive_amount,
+                    'type': transactions_by_name[-1].type
+                })
+
+                trx_model.is_fixed = 'not'
+
+                fixed_transactions_to_return.append(trx_model)
+
+        return fixed_transactions_to_return + transactions
 
     def get_future_transactions(self):
         return self._repository.get_future_transactions()
@@ -139,7 +173,7 @@ class TransactionService:
         return positive_value, negative_value, bill_amount, bill_state
 
     def get_amount(self):
-        end_date = datetime.utcnow()
+        end_date = datetime.utcnow() - timedelta(hours=3)
         start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         bill = 'current_bill'
 
@@ -154,20 +188,24 @@ class TransactionService:
     def get_fixed_transactions(self, start_date: datetime, end_date: datetime) -> List[TransactionModel]:
         return self._repository.get_fixed_transactions(start_date=start_date, end_date=end_date)
 
-    def get_amount_from_fixed_transactions(self, start_date: datetime, end_date: datetime) -> (float, float):
+    def get_amount_from_fixed_transactions(self, start_date: str, end_date: str) -> (float, float):
 
-        positive_transactions = self._repository.get_transactions(start_date=start_date, end_date=end_date,
-                                                                  custom_filters={'fixed': True,
-                                                                                  'category': 'TransferInEvent'})
+        transactions = self.get_transactions(start_date=start_date, end_date=end_date)
+
+        positive_transactions = []
+        negative_transactions = []
+
+        for transaction in transactions:
+            if transaction.is_fixed in ['not', True]:
+                if transaction.raw_category == 'TransferInEvent':
+                    positive_transactions.append(transaction)
+                else:
+                    negative_transactions.append(transaction)
 
         new_positive_amount = 0
         for trx in positive_transactions:
             transactions = self._repository.get_transactions_by_name(trx.name)
             new_positive_amount += sum([x.amount for x in transactions]) / len(transactions)
-
-        negative_transactions = self._repository.get_transactions(start_date=start_date, end_date=end_date,
-                                                                  custom_filters={'fixed': True, 'category': {
-                                                                      '$not': {'$in': ['TransferInEvent']}}})
 
         new_negative_amount = 0
         for trx in negative_transactions:

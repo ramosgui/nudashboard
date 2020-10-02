@@ -126,7 +126,6 @@ export default function TemporaryDrawer(props) {
   const classes = useStyles();
 
   const updateCategory = (category) => {
-    console.log(category)
     props.setCurrentCategory(category)
     props.closeDrawer()
   }
@@ -142,7 +141,6 @@ export default function TemporaryDrawer(props) {
         categories.push(category)
       }
     }
-    console.log(categories)
     return categories
   }
 

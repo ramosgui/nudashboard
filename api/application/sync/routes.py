@@ -20,6 +20,7 @@ def _format_bill_transaction(trx: dict, bill_id: str):
     trx['post_date'] = post_date
     trx['_id'] = trx['id']
     trx['amount'] = trx['amount'] / 100
+    trx['created_at'] = datetime.utcnow().isoformat()
 
     trx.pop('id')
 
@@ -51,6 +52,7 @@ def _format_account_transaction(trx: dict):
     trx['category'] = trx['__typename']
     trx.pop('__typename')
     trx.pop('id')
+    trx['created_at'] = datetime.utcnow().isoformat()
 
     return trx
 

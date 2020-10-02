@@ -42,7 +42,7 @@ def _format_transactions(transactions: List[TransactionModel]):
             'rawCategory': transaction.raw_category,
             'categoryById': transaction.category_by_trx_id,
             'categoryByMap': transaction.category_by_trx_name,
-            'amount': _format_amount(transaction.amount),
+            'amount': round(transaction.amount, 2),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
             'chargesPaid': transaction.charges_paid,
@@ -89,9 +89,20 @@ def get_future_transactions():
     formatted_transactions = _format_transactions(transactions)
     formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
 
+    categories_col = current_app.app_config.mongodb.categories_collection
+
+    categories = {}
+    for category in categories_col.find({}):
+        categories[category['_id']] = {
+            'icon': category['icon'],
+            'color': category['color'],
+            'type': category['type']
+        }
+
     return jsonify({'qtd': len(transactions),
                     'value': _format_amount(sum([x.amount for x in transactions])),
-                    'transactions': formatted_transactions}), 200
+                    'transactions': formatted_transactions,
+                    'categories': categories}), 200
 
 
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
@@ -136,6 +147,7 @@ def update_transaction():
     category_col = current_app.app_config.mongodb.category_mapping_collection
     title_col = current_app.app_config.mongodb.title_mapping_collection
     trx_col = current_app.app_config.mongodb.card_transactions_collections
+    fixed_col = current_app.app_config.mongodb.fixed_transaction_collection
 
     if info['sameCategory'] is False:
         category_col.remove({'_id': info['trx']})
@@ -154,31 +166,26 @@ def update_transaction():
         title_col.remove({'_id': transaction.id})
         title_col.update_one({'_id': transaction.raw_title}, {'$set': {'value': info['trx']}}, upsert=True)
 
-    else:
+    elif info['id']:
         title_col.update_one({'_id': info['id']}, {'$set': {'value': info['trx']}}, upsert=True)
         if transaction.charges:
             title_col.update_one({'_id': transaction.ref_id}, {'$set': {'value': info['trx']}}, upsert=True)
 
     if info['fixedTransaction'] is False:
-        trxs_to_update = []
-        for trx in title_col.find({'value': info['trx']}):
-            trxs_to_update.append(trx['_id'])
-        trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
-        trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
+        # trxs_to_update = []
+        # for trx in title_col.find({'value': info['trx']}):
+        #     trxs_to_update.append(trx['_id'])
+        # trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
+        # trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': False}})
+        fixed_col.remove({'_id': info['trx']})
 
     elif info['fixedTransaction'] is True:
-        trxs_to_update = []
-        for trx in title_col.find({'value': info['trx']}):
-            trxs_to_update.append(trx['_id'])
-        trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
-        trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
-
-    #     print('aqui')
-    #
-    #
-    # service.update_trx_title(new_transaction_name=req_content['transactionName'].strip(), id_=req_content['id'],
-    #                          same_transaction_name=req_content['sameTransactionName'],
-    #                          same_transaction_charge=req_content['sameTransactionCharge'])
+        # trxs_to_update = []
+        # for trx in title_col.find({'value': info['trx']}):
+        #     trxs_to_update.append(trx['_id'])
+        # trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
+        # trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
+        fixed_col.insert_one({'_id': info['trx']})
 
     return jsonify({'msg': 'Transaction has been updated.'}), 200
 
@@ -193,8 +200,8 @@ def transfer_in_transactions():
     bill = 'current_bill'
 
     positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
-                                                                                           end_date=end_date,
-                                                                                           bill=bill)
+                                                                                  end_date=end_date,
+                                                                                  bill=bill)
 
     total = positive_value - (negative_value + bill_amount)
 
@@ -244,22 +251,18 @@ def account_amount():
     if account_total is None:
         account_total = {'value': 0}
 
-    if bill_state != 'open':
+    if bill_state and bill_state != 'open':
         bill_out = 'FATURA PAGA'
-        out_raw = positive_value - negative_value
-        out = _format_amount(out_raw)
-
         total = _format_amount(account_total['value'])
-    else:
-        bill_out = _format_amount(bill_amount)
-        out_raw = positive_value - (negative_value + bill_amount)
-        out = _format_amount(out_raw)
 
-        total = _format_amount(account_total['value'] + out_raw)
+    else:
+        account_balance = account_total['value']
+        bill_value = bill_amount * -1
+        bill_out = _format_amount(bill_value)
+        total = _format_amount(account_balance + bill_value)
 
     return jsonify({
         'account_total': _format_amount(account_total['value']),
-        'out': out,
         'bill_out': bill_out,
         'total': total
     }), 200
@@ -288,54 +291,18 @@ def get_fixed_transactions_amount():
     transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
     service = TransactionService(transaction_repository=transaction_repository)
 
-    start_date = _convert_dt_str_to_dt(params['startDate'])
-    end_date = _convert_dt_str_to_dt(params['endDate'])
+    # start_date = _convert_dt_str_to_dt(params['startDate'])
+    # end_date = _convert_dt_str_to_dt(params['endDate'])
 
-    bill_amount = service.get_bill('future_bill')
-
-    positive_amount, negative_amount = service.get_amount_from_fixed_transactions(start_date=start_date,
-                                                                                  end_date=end_date)
+    positive_amount, negative_amount = service.get_amount_from_fixed_transactions(start_date=params['startDate'],
+                                                                                  end_date=params['endDate'])
 
     return jsonify({
         'positive': _format_amount(positive_amount),
         'negative': _format_amount(negative_amount * -1),
-        'fatura': _format_amount(bill_amount * -1),
         'total': _format_amount(positive_amount + (negative_amount * -1))
     }), 200
 
 
-@transaction_blueprint.route('/categories', methods=['GET'])
-def get_categories():
-    categories_col = current_app.app_config.mongodb.categories_collection
-
-    categories = []
-    for category in categories_col.find({}):
-        categories.append({
-            'name': category['_id'],
-            'icon': category['icon'],
-            'color': category['color'],
-            'type': category['type']
-        })
-
-    return jsonify(categories)
-
-
-@transaction_blueprint.route('/category', methods=['GET'])
-def get_category_by_name():
-    params = dict(request.args)
-
-    categories_col = current_app.app_config.mongodb.categories_collection
-
-    category = categories_col.find_one({'_id': params['name']})
-
-    return jsonify({
-        'name': category['_id'],
-        'icon': category['icon'],
-        'color': category['color'],
-        'type': category['type']
-    })
-
-# TODO PARA TRANSAÇÕES COM MAPEADAS ATRAVES DO NOME E DA PARCELA COLOCAR UM ICONE DE INTERROGAÇÃO EXPLICANDO
-
-
 # TODO NOMEAR PARCELAR AUTOMATICAMENTE
+# TODO PARA TRANSAÇÕES FIXAS, ALTERAR ICONE, DE ACORDO COM A TRANSAÇÃO (SE JA FOI PAGO FICA VERDE, SE AINDA NAO TEVE UMA TRANSAÇÃO FIXA NO MES, FICA VERMELHO)

@@ -6,7 +6,8 @@ class MongoDatabaseConfig:
 
     def __init__(self, card_transactions_collections: Collection, debit_transactions_collections: Collection,
                  category_mapping_collection: Collection, title_mapping_collection: Collection,
-                 current_bill_info_collection: Collection, categories_collection: Collection):
+                 current_bill_info_collection: Collection, categories_collection: Collection,
+                 fixed_transaction_collection: Collection):
         """
 
         :param card_transactions_collections:
@@ -15,6 +16,7 @@ class MongoDatabaseConfig:
         :param title_mapping_collection:
         :param current_bill_info_collection:
         :param categories_collection:
+        :param fixed_transaction_collection:
         """
         self.card_transactions_collections = card_transactions_collections
         self.debit_transactions_collections = debit_transactions_collections
@@ -22,6 +24,7 @@ class MongoDatabaseConfig:
         self.title_mapping_collection = title_mapping_collection
         self.current_bill_info_collection = current_bill_info_collection
         self.categories_collection = categories_collection
+        self.fixed_transaction_collection = fixed_transaction_collection
 
 
 class Config:
@@ -39,13 +42,15 @@ def mongo_database(mongo_config: dict):
     title_mapping_collection = db['title_mapping']
     current_bill_info_collection = db['current_bill_info']
     categories_collection = db['categories']
+    fixed_transaction_collection = db['fixed_transactions']
 
     return MongoDatabaseConfig(card_transactions_collections=card_transactions_collection,
                                debit_transactions_collections=debit_transactions_collection,
                                category_mapping_collection=category_mapping_collection,
                                title_mapping_collection=title_mapping_collection,
                                current_bill_info_collection=current_bill_info_collection,
-                               categories_collection=categories_collection)
+                               categories_collection=categories_collection,
+                               fixed_transaction_collection=fixed_transaction_collection)
 
 
 def create_config(config_file: dict):

@@ -33,14 +33,15 @@ export default function SimpleCard(props) {
   const classes = useStyles();
   /* const bull = <span className={classes.bullet}>•</span>; */
 
-  const [data, setData] = useState({});
+
+  const [forecast, setForecast] = useState({});
 
   useEffect(() => {
     var host = window.location.hostname;
     var today = new Date();
 
-    axios.get('http://' + host + ':5050/transactions/transfer_in', {}).then(res => {
-      setData(res.data)
+    axios.get('http://' + host + ':5050/transactions/fixed/amount', {'params': {'startDate': new Date(today.getFullYear(), today.getMonth(), 1), 'endDate': today}}).then(res => {
+      setForecast(res.data)
     });
 
   }, [props.updateData])
@@ -49,7 +50,7 @@ export default function SimpleCard(props) {
     <Card className={classes.root}>
       <CardContent>
         <Typography className={classes.title} color="textSecondary" gutterBottom>
-          Overview do mês atual
+          Planejamento do mês atual
         </Typography>
         <Typography variant="body2" component="p">
 
@@ -57,23 +58,23 @@ export default function SimpleCard(props) {
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Renda' />
-              <ListItemSecondaryAction><ListItemText primary={data.positive} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={forecast.positive} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
-              <ListItemText style={{width: '80px'}} primary='Gastos' />
-              <ListItemSecondaryAction><ListItemText primary={data.negative} /></ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Gastos fixos' />
+              <ListItemSecondaryAction><ListItemText primary={forecast.negative} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
-              <ListItemText style={{width: '80px'}} primary='Fatura do mês' />
-              <ListItemSecondaryAction><ListItemText primary={data.fatura} /></ListItemSecondaryAction>
+              <ListItemText style={{width: '80px'}} primary='Gastos planejados' />
+              <ListItemSecondaryAction><ListItemText primary='Em breve' /></ListItemSecondaryAction>
             </ListItem>
 
             <Divider/>
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Total' />
-              <ListItemSecondaryAction><ListItemText primary={data.total} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={forecast.total} /></ListItemSecondaryAction>
             </ListItem>
 
 

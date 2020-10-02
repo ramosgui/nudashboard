@@ -14,6 +14,7 @@ class TransactionRepository:
         self._category_mapping_collection = mongodb.category_mapping_collection
         self._title_mapping_collection = mongodb.title_mapping_collection
         self._current_bill_info_collection = mongodb.current_bill_info_collection
+        self._fixed_transaction_collection = mongodb.fixed_transaction_collection
 
     def _create_transaction_model(self, raw_trx: dict):
         trx_model = TransactionModel(id_=raw_trx['_id'], post_date=raw_trx['post_date'], raw_title=raw_trx['title'],
@@ -21,19 +22,19 @@ class TransactionRepository:
                                      charges=raw_trx.get('charges'), ref_id=raw_trx.get('ref_id'),
                                      category_map_collection=self._category_mapping_collection,
                                      title_mapping_collection=self._title_mapping_collection,
-                                     index=raw_trx.get('index'), type_=raw_trx['type'],
-                                     is_fixed=raw_trx.get('fixed', False))
+                                     fixed_transaction_collection=self._fixed_transaction_collection,
+                                     index=raw_trx.get('index'), type_=raw_trx['type'])
 
         # necessário para preencher os campos (mudar futuramente)
         a = trx_model.category
 
-        same_category_check = False
+        same_category_check = None
         if trx_model.category_by_trx_name and not trx_model.category_by_trx_id:
             same_category_check = True
 
         trx_model.same_category_check = same_category_check
 
-        same_name_check = False
+        same_name_check = None
         if trx_model.title_by_name and not trx_model.title_by_id:
             same_name_check = True
 
@@ -43,7 +44,8 @@ class TransactionRepository:
 
     def get_transaction(self, trx_id: str) -> TransactionModel:
         trx = self._transaction_collection.find_one({'_id': trx_id})
-        return self._create_transaction_model(trx)
+        if trx:
+            return self._create_transaction_model(trx)
 
     def get_transactions(self, start_date: datetime, end_date: datetime, custom_filters: dict = None):
         filters_ = {
@@ -59,6 +61,13 @@ class TransactionRepository:
         for trx in result:
             transactions.append(self._create_transaction_model(trx))
 
+        return transactions
+
+    def get_fixed_transactions_new(self):
+        transactions = []
+        result = self._fixed_transaction_collection.find({})
+        for trx in result:
+            transactions.append(trx['_id'])
         return transactions
 
     def get_transactions_by_name(self, name: str):

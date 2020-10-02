@@ -60,13 +60,7 @@ const useStyles = makeStyles((theme) => ({
 export default function TemporaryDrawer(props) {
   const classes = useStyles();
 
-  const [values, setValues] = useState({
-    'sameCategory': null,
-    'sameTransactionName': null,
-    'sameTransactionCharge': null,
-    'fixedTransaction': null,
-    'defaultTransactionName': null
-  });
+  const [values, setValues] = useState({});
 
   const [viewCategoryDrawer, setViewCategoryDrawer] = useState(false);
   const [currentCategory, setCurrentCategory] = useState({'color': ['grey', 500]})
@@ -88,11 +82,8 @@ export default function TemporaryDrawer(props) {
       if (event.target.value === props.drawerData.title) {
         auxValues['sameTransactionName'] = props.drawerData.sameNameCheck
         auxValues['fixedTransaction'] = props.drawerData.isFixed
-
-      } else {
-        auxValues['sameTransactionName'] = false
-        auxValues['fixedTransaction'] = false
       }
+
     }
 
     setValues(auxValues);
@@ -101,7 +92,6 @@ export default function TemporaryDrawer(props) {
 
   const handleGenericChecked = (event) => {
     const auxValues = { ...values };
-    console.log(event.target.name, event.target.checked)
     auxValues[event.target.name] = event.target.checked;
     setValues(auxValues);
   };
@@ -142,7 +132,7 @@ export default function TemporaryDrawer(props) {
     }
     setValues(auxValues);
 
-    console.log(props.categories)
+    console.log(props.drawerData)
 
   }, [props.drawerState])
 
