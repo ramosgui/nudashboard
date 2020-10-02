@@ -71,7 +71,7 @@ class TransactionService:
 
                 fixed_transactions_to_return.append(trx_model)
 
-        return fixed_transactions_to_return + transactions
+        return transactions + fixed_transactions_to_return
 
     def get_future_transactions(self):
         return self._repository.get_future_transactions()
