@@ -44,6 +44,7 @@ import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 import LocalHospitalIcon from '@material-ui/icons/LocalHospital';
 import PersonIcon from '@material-ui/icons/Person';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
+import LocalBarIcon from '@material-ui/icons/LocalBar';
 
 
 
@@ -112,13 +113,13 @@ export const icons = {
   'CardGiftcardIcon': <CardGiftcardIcon />,
   'AccountBalanceWalletIcon': <AccountBalanceWalletIcon />,
   'AttachMoneyIcon': <AttachMoneyIcon />,
-  /*   'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>,
-    'LocalOfferIcon': <LocalOfferIcon/>, */
+  'LocalBarIcon': <LocalBarIcon/>,
+/*   'LocalOfferIcon': <LocalOfferIcon/>,
+  'LocalOfferIcon': <LocalOfferIcon/>,
+  'LocalOfferIcon': <LocalOfferIcon/>,
+  'LocalOfferIcon': <LocalOfferIcon/>,
+  'LocalOfferIcon': <LocalOfferIcon/>,
+  'LocalOfferIcon': <LocalOfferIcon/>, */
 }
 
 
@@ -143,27 +144,6 @@ export default function TemporaryDrawer(props) {
     }
     return categories
   }
-
-  const essencialCategories = [
-    { 'name': 'Contas residenciais', 'icon': <ReceiptIcon />, 'color': blueGrey[500] },
-    { 'name': 'Educação', 'icon': <MenuBookIcon />, 'color': lightGreen[400] },
-    { 'name': 'Mercado', 'icon': <ShoppingCartIcon />, 'color': red[500] },
-    { 'name': 'Moradia', 'icon': <HomeIcon />, 'color': deepPurple[500] },
-    { 'name': 'Saúde', 'icon': <LocalHospitalIcon />, 'color': red[300] },
-    { 'name': 'Transporte', 'icon': <DriveEtaIcon />, 'color': amber[600] }
-  ]
-
-
-  const notClassifiedCategories = [
-  ]
-
-  const incomeCategories = [
-  ]
-
-  /*   useEffect(() => {
-      console.log(props)
-      getCategories('Estilo de vida')
-    }, []) */
 
   return (
     <div>

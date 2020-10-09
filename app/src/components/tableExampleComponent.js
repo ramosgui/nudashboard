@@ -65,12 +65,7 @@ const tableIcons = {
   Category: forwardRef((props, ref) => <FormatListBulletedOutlinedIcon {...props} ref={ref} />),
 };
 
-const amountFunction = (amount, category) => {
-  /* if (amount.includes('-')) {
-    return <div style={{ color: green[500] }}>{amount}</div>
-  } */ if (category === 'TransferInEvent') {
-    return <div style={{ color: green[500] }}>{'R$ ' + amount}</div>
-  }
+const amountFunction = (amount) => {
   return <div>{'R$ ' + amount}</div>
 }
 
@@ -239,7 +234,7 @@ export default function TransactionsTableComponent(props) {
             editable: 'never',
             render: rowData => {
               if (rowData.amount) {
-                return amountFunction(rowData.amount, rowData.rawCategory)
+                return amountFunction(rowData.amount)
               }
             }
           },

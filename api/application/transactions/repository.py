@@ -1,15 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 from dateutil.relativedelta import relativedelta
 
 from application.transactions.model import TransactionModel
-from config import MongoDatabaseConfig
 
 
 class TransactionRepository:
 
-    def __init__(self, mongodb: MongoDatabaseConfig):
+    def __init__(self, mongodb):
         self._transaction_collection = mongodb.card_transactions_collections
         self._category_mapping_collection = mongodb.category_mapping_collection
         self._title_mapping_collection = mongodb.title_mapping_collection
@@ -24,21 +23,6 @@ class TransactionRepository:
                                      title_mapping_collection=self._title_mapping_collection,
                                      fixed_transaction_collection=self._fixed_transaction_collection,
                                      index=raw_trx.get('index'), type_=raw_trx['type'])
-
-        # necessário para preencher os campos (mudar futuramente)
-        a = trx_model.category
-
-        same_category_check = None
-        if trx_model.category_by_trx_name and not trx_model.category_by_trx_id:
-            same_category_check = True
-
-        trx_model.same_category_check = same_category_check
-
-        same_name_check = None
-        if trx_model.title_by_name and not trx_model.title_by_id:
-            same_name_check = True
-
-        trx_model.same_name_check = same_name_check
 
         return trx_model
 
@@ -116,7 +100,7 @@ class TransactionRepository:
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)
         amount_by_category = {}
         for transaction in transactions:
-            if transaction.raw_category in ('TransferInEvent'):
+            if transaction._raw_category in ('TransferInEvent'):
                 continue
             value = amount_by_category.get(transaction.category, 0) + transaction.amount
             amount_by_category[transaction.category] = float('%.2f' % value)

@@ -3,14 +3,21 @@ from typing import List
 
 from dateutil.relativedelta import relativedelta
 
+from application.categories.repository import CategoriesRepository
 from application.transactions.model import TransactionModel
 from application.transactions.repository import TransactionRepository
 
 
 class TransactionService:
 
-    def __init__(self, transaction_repository: TransactionRepository):
-        self._repository = transaction_repository
+    def __init__(self, transactions_repository: TransactionRepository, categories_repository: CategoriesRepository):
+        """
+
+        :param transactions_repository:
+        :param categories_repository:
+        """
+        self._transactions_repository = transactions_repository
+        self._categories_repository = categories_repository
 
     @staticmethod
     def _percentile(number1, number2):
@@ -22,7 +29,7 @@ class TransactionService:
         :param trx_id:
         :return:
         """
-        return self._repository.get_transaction(trx_id=trx_id)
+        return self._transactions_repository.get_transaction(trx_id=trx_id)
 
     def get_transactions(self, start_date: str, end_date: str):
         if 'T' in start_date:
@@ -37,9 +44,9 @@ class TransactionService:
         else:
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
-        transactions = self._repository.get_transactions(start_date=start_dt, end_date=end_dt)
+        transactions = self._transactions_repository.get_transactions(start_date=start_dt, end_date=end_dt)
 
-        fixed_transactions = self._repository.get_fixed_transactions_new()
+        fixed_transactions = self._transactions_repository.get_fixed_transactions_new()
 
         transaction_by_names = {}
         for transaction in transactions:
@@ -48,12 +55,11 @@ class TransactionService:
         fixed_transactions_to_return = []
         for fixed_transaction in fixed_transactions:
 
-            if fixed_transaction in transaction_by_names:
-                print(fixed_transaction)
+            if fixed_transaction not in transaction_by_names:
 
-            else:
-                transactions_by_name = self._repository.get_transactions_by_name(fixed_transaction)
-                new_positive_amount = sum([x.amount for x in transactions_by_name]) / len(transactions_by_name)
+                transactions_by_name = self._transactions_repository.get_transactions_by_name(fixed_transaction)
+                if transactions_by_name:
+                    new_positive_amount = sum([x.amount for x in transactions_by_name]) / len(transactions_by_name)
 
                 # trx_model = TransactionModel(category_map_collection=self._repository._category_mapping_collection,
                 #                              title_mapping_collection=self._repository._title_mapping_collection,
@@ -61,20 +67,39 @@ class TransactionService:
                 #                              raw_category=transactions_by_name[-1].raw_category, charges=None, amount=new_positive_amount, ref_id=None,
                 #                              index=None, type_=transactions_by_name[-1].type, is_fixed='not')
 
-                trx_model = self._repository._create_transaction_model({
-                    '_id': transactions_by_name[-1].id, 'post_date': datetime.utcnow(), 'title': transactions_by_name[-1].raw_title,
-                    'category': transactions_by_name[-1].raw_category, 'amount': new_positive_amount,
-                    'type': transactions_by_name[-1].type
-                })
+                    trx_model = self._transactions_repository._create_transaction_model({
+                        '_id': transactions_by_name[-1].id, 'post_date': datetime.utcnow(), 'title': transactions_by_name[-1].raw_title,
+                        'category': transactions_by_name[-1]._raw_category, 'amount': new_positive_amount,
+                        'type': transactions_by_name[-1].type
+                    })
 
-                trx_model.is_fixed = 'not'
+                    trx_model.is_fixed = 'not'
 
-                fixed_transactions_to_return.append(trx_model)
+                    fixed_transactions_to_return.append(trx_model)
 
-        return transactions + fixed_transactions_to_return
+        transactions.extend(fixed_transactions_to_return)
+
+        # SORT
+        trx_sort = {
+            'fixed_false': [],
+            'all': []
+        }
+        for transaction in transactions:
+            if transaction.is_fixed == 'not':
+                trx_sort['fixed_false'].append(transaction)
+            else:
+                trx_sort['all'].append(transaction)
+
+        # trx_sort['fixed_true'] = [x for x in sorted(trx_sort['fixed_true'], key=lambda k: (k.category, k.time), reverse=True)]
+        trx_sort['fixed_false'] = [x for x in sorted(trx_sort['fixed_false'], key=lambda k: (k.category, k.time), reverse=True)]
+        trx_sort['all'] = [x for x in sorted(trx_sort['all'], key=lambda k: (k.time, k.category), reverse=True)]
+
+        all_transactions = trx_sort['fixed_false'] + trx_sort['all']
+
+        return all_transactions
 
     def get_future_transactions(self):
-        return self._repository.get_future_transactions()
+        return self._transactions_repository.get_future_transactions()
 
     def _test(self, value_to_compare, total_value):
         if total_value == 0:
@@ -104,16 +129,16 @@ class TransactionService:
         last_start_date = start_date - relativedelta(months=1)
         final_end_date = start_date - relativedelta(seconds=1)
 
-        trx_amount_by_categories = self._repository.get_trx_amount_by_categories(start_date=start_date,
-                                                                                 end_date=end_date)
+        trx_amount_by_categories = self._transactions_repository.get_trx_amount_by_categories(start_date=start_date,
+                                                                                              end_date=end_date)
 
-        last_full_trx_amount_by_categories = self._repository.get_trx_amount_by_categories(start_date=last_start_date,
-                                                                                           end_date=final_end_date)
+        last_full_trx_amount_by_categories = self._transactions_repository.get_trx_amount_by_categories(start_date=last_start_date,
+                                                                                                        end_date=final_end_date)
 
         trx_amount_by_categories_to_ret = []
-        for category, amount in trx_amount_by_categories.items():
+        for category, last_full_amount in last_full_trx_amount_by_categories.items():
 
-            last_full_amount = last_full_trx_amount_by_categories.get(category, 0)
+            amount = trx_amount_by_categories.get(category, 0)
 
             percent_full = self._test(value_to_compare=amount, total_value=last_full_amount)
 
@@ -152,23 +177,23 @@ class TransactionService:
 
     def get_balance(self, end_date: datetime, start_date: datetime, bill: str):
 
-        positive = self._repository.get_positive_account_transactions(start_date=start_date,
-                                                                      end_date=end_date)
+        positive = self._transactions_repository.get_positive_account_transactions(start_date=start_date,
+                                                                                   end_date=end_date)
 
         positive_transactions = [x.amount for x in positive]
         positive_value = 0
         if positive_transactions:
             positive_value = sum(positive_transactions)
 
-        negative = self._repository.get_negative_account_transactions(start_date=start_date,
-                                                                      end_date=end_date)
+        negative = self._transactions_repository.get_negative_account_transactions(start_date=start_date,
+                                                                                   end_date=end_date)
 
         negative_transactions = [x.amount for x in negative]
         negative_value = 0
         if negative_transactions:
             negative_value = sum(negative_transactions)
 
-        bill_amount, bill_state = self._repository.get_bill_amount(bill)
+        bill_amount, bill_state = self._transactions_repository.get_bill_amount(bill)
 
         return positive_value, negative_value, bill_amount, bill_state
 
@@ -178,15 +203,15 @@ class TransactionService:
         bill = 'current_bill'
 
         positive_value, negative_value, bill_amount, bill_state = self.get_balance(bill=bill,
-                                                                                                start_date=start_date,
-                                                                                                end_date=end_date)
+                                                                                   start_date=start_date,
+                                                                                   end_date=end_date)
 
-        account_total = self._repository.get_account_amount()
+        account_total = self._transactions_repository.get_account_amount()
 
         return account_total, positive_value, negative_value, bill_amount, bill_state
 
     def get_fixed_transactions(self, start_date: datetime, end_date: datetime) -> List[TransactionModel]:
-        return self._repository.get_fixed_transactions(start_date=start_date, end_date=end_date)
+        return self._transactions_repository.get_fixed_transactions(start_date=start_date, end_date=end_date)
 
     def get_amount_from_fixed_transactions(self, start_date: str, end_date: str) -> (float, float):
 
@@ -197,23 +222,23 @@ class TransactionService:
 
         for transaction in transactions:
             if transaction.is_fixed in ['not', True]:
-                if transaction.raw_category == 'TransferInEvent':
+                if transaction._raw_category == 'TransferInEvent':
                     positive_transactions.append(transaction)
                 else:
                     negative_transactions.append(transaction)
 
         new_positive_amount = 0
         for trx in positive_transactions:
-            transactions = self._repository.get_transactions_by_name(trx.name)
+            transactions = self._transactions_repository.get_transactions_by_name(trx.name)
             new_positive_amount += sum([x.amount for x in transactions]) / len(transactions)
 
         new_negative_amount = 0
         for trx in negative_transactions:
-            transactions = self._repository.get_transactions_by_name(trx.name)
+            transactions = self._transactions_repository.get_transactions_by_name(trx.name)
             new_negative_amount += sum([x.amount for x in transactions]) / len(transactions)
 
         return new_positive_amount, new_negative_amount
 
     def get_bill(self, bill: str):
-        amount, _ = self._repository.get_bill_amount(bill)
+        amount, _ = self._transactions_repository.get_bill_amount(bill)
         return amount

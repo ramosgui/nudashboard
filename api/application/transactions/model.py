@@ -15,25 +15,22 @@ class TransactionModel:
         self.id = id_
         self.time = post_date
         self.raw_title = raw_title
-        self.raw_category = raw_category
+
         self.charges = charges
         self.ref_id = ref_id
         self._amount = amount
         self.index = index
         self.type = type_
 
-        self.title_by_id = None
-        self.title_by_name = None
-        self.title_by_ref_id = None
-
-        self.category_by_trx_id = None
-        self.category_by_trx_name = None
-
         self.use_raw_category = None
 
         self._to_save = {}
 
         self._is_fixed = None
+        self._raw_category = raw_category
+
+        self.same_name_check = None
+        self.same_category_check = None
 
     @property
     def charges_paid(self):
@@ -58,23 +55,26 @@ class TransactionModel:
     @property
     def name(self):
         name = None
+        title_by_trx_id = None
 
-        title_by_raw_title = self._title_mapping_collection.find_one({'_id': self.raw_title})
+        title_by_raw_title = self._title_mapping_collection.find_one({'_id': self.raw_title}) or {}
         if title_by_raw_title and title_by_raw_title['value']:
-            self.title_by_name = title_by_raw_title['value']
             name = title_by_raw_title['value']
 
         if self.ref_id:
             title_by_ref_id = self._title_mapping_collection.find_one({'_id': self.ref_id})
             if title_by_ref_id and title_by_ref_id['value']:
-                self.title_by_ref_id = title_by_ref_id['value']
                 name = title_by_ref_id['value']
 
         if self.id:
             title_by_trx_id = self._title_mapping_collection.find_one({'_id': self.id})
             if title_by_trx_id and title_by_trx_id['value']:
-                self.title_by_id = title_by_trx_id['value']
                 name = title_by_trx_id['value']
+
+        same_name_check = None
+        if title_by_raw_title.get('value') and not title_by_trx_id:
+            same_name_check = True
+        self.same_name_check = same_name_check
 
         if name:
             return name
@@ -90,23 +90,27 @@ class TransactionModel:
         category = None
 
         # pelo titulo da transação
-        category_by_trx_title = self._category_map_collection.find_one({'_id': self.name})
+        category_by_trx_title = self._category_map_collection.find_one({'_id': self.name}) or {}
         if category_by_trx_title and category_by_trx_title['value']:
-            self.category_by_trx_name = category_by_trx_title['value']
             category = category_by_trx_title['value']
 
         # pelo id da trx
-        category_by_trx_id = self._category_map_collection.find_one({'_id': self.id})
+        category_by_trx_id = self._category_map_collection.find_one({'_id': self.id}) or {}
         if category_by_trx_id and category_by_trx_id.get('value'):
-            self.category_by_trx_id = category_by_trx_id['value']
             category = category_by_trx_id['value']
+
+        same_category_check = None
+        if category_by_trx_title.get('value') and not category_by_trx_id.get('value'):
+            same_category_check = True
+
+        self.same_category_check = same_category_check
 
         if category:
             self.use_raw_category = False
             return category
         else:
             self.use_raw_category = True
-            return self.raw_category
+            return self._raw_category
 
     @category.setter
     def category(self, value):

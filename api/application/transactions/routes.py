@@ -4,9 +4,8 @@ from typing import List
 from dateutil.relativedelta import relativedelta
 from flask import Blueprint, current_app, jsonify, request
 
+from application.categories.model import CategoryModel
 from application.transactions.model import TransactionModel
-from application.transactions.repository import TransactionRepository
-from application.transactions.service import TransactionService
 
 transaction_blueprint = Blueprint(name='transaction_blueprint', import_name='transaction_blueprint')
 
@@ -35,13 +34,9 @@ def _format_transactions(transactions: List[TransactionModel]):
             'refId': transaction.ref_id,
             'title': transaction.name,
             'rawTitle': transaction.raw_title,
-            'titleById': transaction.title_by_id,
-            'titleByMap': transaction.title_by_name,
-            'titleByRef': transaction.title_by_ref_id,
+
             'category': transaction.category,
-            'rawCategory': transaction.raw_category,
-            'categoryById': transaction.category_by_trx_id,
-            'categoryByMap': transaction.category_by_trx_name,
+
             'amount': round(transaction.amount, 2),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
@@ -56,60 +51,50 @@ def _format_transactions(transactions: List[TransactionModel]):
     return formatted_transactions
 
 
+def _format_categories(categories: List[CategoryModel]) -> dict:
+    formatted_categories = {}
+    for category in categories:
+        formatted_categories[category.id] = {
+            'icon': category.icon_name,
+            'color': [category.color_info.color_name, category.color_info.color_weight],
+            'type': category.type
+        }
+    return formatted_categories
+
+
 @transaction_blueprint.route('/transactions', methods=['GET'])
 def get_transactions():
     params = dict(request.args)
 
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-    transactions = service.get_transactions(start_date=params['startDate'], end_date=params['endDate'])
+    categories = current_app.app_config.categories_service.get_categories()
+
+    transactions = current_app.app_config.transaction_service.get_transactions(start_date=params['startDate'],
+                                                                               end_date=params['endDate'])
+
     formatted_transactions = _format_transactions(transactions)
+    formatted_categories = _format_categories(categories)
 
-    categories_col = current_app.app_config.mongodb.categories_collection
-
-    categories = {}
-    for category in categories_col.find({}):
-        categories[category['_id']] = {
-            'icon': category['icon'],
-            'color': category['color'],
-            'type': category['type']
-        }
-
-    formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
-
-    return jsonify({'transactions': formatted_transactions, 'categories': categories}), 200
+    return jsonify({'transactions': formatted_transactions, 'categories': formatted_categories}), 200
 
 
 @transaction_blueprint.route('/future_transactions', methods=['GET'])
 def get_future_transactions():
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-    transactions = service.get_future_transactions()
+    transactions = current_app.app_config.transaction_service.get_future_transactions()
+    categories = current_app.app_config.categories_service.get_categories()
 
     formatted_transactions = _format_transactions(transactions)
     formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
-
-    categories_col = current_app.app_config.mongodb.categories_collection
-
-    categories = {}
-    for category in categories_col.find({}):
-        categories[category['_id']] = {
-            'icon': category['icon'],
-            'color': category['color'],
-            'type': category['type']
-        }
+    formatted_categories = _format_categories(categories)
 
     return jsonify({'qtd': len(transactions),
                     'value': _format_amount(sum([x.amount for x in transactions])),
                     'transactions': formatted_transactions,
-                    'categories': categories}), 200
+                    'categories': formatted_categories}), 200
 
 
 @transaction_blueprint.route('/transactions/category/amount', methods=['GET'])
 def get_amount_by_category():
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-    amount_by_category = service.get_amount_by_category()
+    amount_by_category = current_app.app_config.transaction_service.get_amount_by_category()
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
     amount_by_category = [
@@ -123,8 +108,7 @@ def get_amount_by_category():
 def update_transaction_category():
     req_content = request.get_json(force=True)
 
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
+    service = current_app.app_config.transaction_service
 
     service.update_trx_category(new_category=req_content['category'].strip(), trx_id=req_content['id'].strip(),
                                 type_=req_content['type'].strip())
@@ -140,13 +124,10 @@ def update_transaction():
 
     info = req_content['auxValues']
 
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
+    transaction = current_app.app_config.transaction_service.get_transaction(info['id'])
 
-    transaction = service.get_transaction(info['id'])
     category_col = current_app.app_config.mongodb.category_mapping_collection
     title_col = current_app.app_config.mongodb.title_mapping_collection
-    trx_col = current_app.app_config.mongodb.card_transactions_collections
     fixed_col = current_app.app_config.mongodb.fixed_transaction_collection
 
     if info['sameCategory'] is False:
@@ -185,15 +166,20 @@ def update_transaction():
         #     trxs_to_update.append(trx['_id'])
         # trx_col.update_many({'_id': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
         # trx_col.update_many({'title': {'$in': trxs_to_update}}, {'$set': {'fixed': True}})
-        fixed_col.insert_one({'_id': info['trx']})
+        try:
+            fixed_col.insert_one({'_id': info['trx']})
+        except Exception as e:
+            print(e)
+
+    if transaction.category != info['category']:
+        category_col.update_one({'_id': info['trx']}, {'$set': {'value': info['category']}}, upsert=True)
 
     return jsonify({'msg': 'Transaction has been updated.'}), 200
 
 
 @transaction_blueprint.route('/transactions/transfer_in', methods=['GET'])
 def transfer_in_transactions():
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
+    service = current_app.app_config.transaction_service
 
     end_date = datetime.utcnow()
     start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -215,8 +201,7 @@ def transfer_in_transactions():
 
 @transaction_blueprint.route('/transactions/last_transfer_in', methods=['GET'])
 def last_transfer_in_transactions():
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
+    service = current_app.app_config.transaction_service
 
     end_date = datetime.utcnow()
     start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -244,10 +229,7 @@ def last_transfer_in_transactions():
 
 @transaction_blueprint.route('/account/amount', methods=['GET'])
 def account_amount():
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-
-    account_total, positive_value, negative_value, bill_amount, bill_state = service.get_amount()
+    account_total, positive_value, negative_value, bill_amount, bill_state = current_app.app_config.transaction_service.get_amount()
     if account_total is None:
         account_total = {'value': 0}
 
@@ -272,13 +254,11 @@ def account_amount():
 def get_fixed_transactions():
     params = dict(request.args)
 
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-
     start_date = _convert_dt_str_to_dt(params['startDate'])
     end_date = _convert_dt_str_to_dt(params['endDate'])
 
-    transactions = service.get_fixed_transactions(start_date=start_date, end_date=end_date)
+    transactions = current_app.app_config.transaction_service.get_fixed_transactions(start_date=start_date,
+                                                                                     end_date=end_date)
     formatted_transactions = _format_transactions(transactions)
 
     return jsonify(formatted_transactions), 200
@@ -287,12 +267,7 @@ def get_fixed_transactions():
 @transaction_blueprint.route('/transactions/fixed/amount', methods=['GET'])
 def get_fixed_transactions_amount():
     params = dict(request.args)
-
-    transaction_repository = TransactionRepository(mongodb=current_app.app_config.mongodb)
-    service = TransactionService(transaction_repository=transaction_repository)
-
-    # start_date = _convert_dt_str_to_dt(params['startDate'])
-    # end_date = _convert_dt_str_to_dt(params['endDate'])
+    service = current_app.app_config.transaction_service
 
     positive_amount, negative_amount = service.get_amount_from_fixed_transactions(start_date=params['startDate'],
                                                                                   end_date=params['endDate'])
@@ -302,7 +277,3 @@ def get_fixed_transactions_amount():
         'negative': _format_amount(negative_amount * -1),
         'total': _format_amount(positive_amount + (negative_amount * -1))
     }), 200
-
-
-# TODO NOMEAR PARCELAR AUTOMATICAMENTE
-# TODO PARA TRANSAÇÕES FIXAS, ALTERAR ICONE, DE ACORDO COM A TRANSAÇÃO (SE JA FOI PAGO FICA VERDE, SE AINDA NAO TEVE UMA TRANSAÇÃO FIXA NO MES, FICA VERMELHO)

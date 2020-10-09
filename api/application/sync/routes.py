@@ -12,9 +12,9 @@ synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='syn
 
 def _format_bill_transaction(trx: dict, bill_id: str):
     if trx['title'] == 'Pagamento recebido':
-        return None, None
+        return {}
 
-    filter_ = {'_id': trx['id']}
+    trx['_id'] = trx['id']
 
     post_date = datetime.strptime(trx['post_date'], '%Y-%m-%d')
     trx['post_date'] = post_date
@@ -39,7 +39,7 @@ def _format_bill_transaction(trx: dict, bill_id: str):
         trx.pop('index')
         trx.pop('charges')
 
-    return filter_, {'$set': trx}
+    return trx
 
 
 def _format_account_transaction(trx: dict):
@@ -52,7 +52,19 @@ def _format_account_transaction(trx: dict):
     trx['category'] = trx['__typename']
     trx.pop('__typename')
     trx.pop('id')
+    trx.pop('postDate')
     trx['created_at'] = datetime.utcnow().isoformat()
+
+    if trx.get('originAccount'):
+        trx['title'] = f'{trx["title"]} - {trx["originAccount"]["name"]}'
+        trx.pop('originAccount')
+
+    if trx.get('destinationAccount'):
+        trx['title'] = f'{trx["title"]} - {trx["destinationAccount"]["name"]}'
+        trx.pop('destinationAccount')
+
+    if trx['category'] == 'BarcodePaymentEvent':
+        trx['title'] = f'{trx["title"]} - {trx["detail"]}'
 
     return trx
 
@@ -132,28 +144,38 @@ def sync():
         for trx in account_transactions:
             formatted_trx = _format_account_transaction(trx=trx)
             try:
+                transaction_collection.remove({'_id': formatted_trx['_id']})
                 transaction_collection.insert_one(formatted_trx)
             except Exception as e:
                 print(e)
-                pass
 
         for trx in open_bill_transactions:
-            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=current_bill_id)
-            if filter_:
+            document = _format_bill_transaction(trx=trx, bill_id=current_bill_id)
+            if document:
                 try:
-                    transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
+                    transaction_collection.insert_one(document)
                 except Exception as e:
-                    print(e)
-                    pass
+                    document_update = document.copy()
+                    document_update.pop('created_at')
+                    id_ = document_update.pop('_id')
+                    try:
+                        transaction_collection.update_one(filter={'_id': id_}, update={'$set': document}, upsert=True)
+                    except Exception as e:
+                        print(e)
 
         for trx in latest_bill_transactions:
-            filter_, update_ = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
-            if filter_:
+            document = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
+            if document:
                 try:
-                    transaction_collection.update_one(filter=filter_, update=update_, upsert=True)
+                    transaction_collection.insert_one(document)
                 except Exception as e:
-                    print(e)
-                    pass
+                    document_update = document.copy()
+                    document_update.pop('created_at')
+                    id_ = document_update.pop('_id')
+                    try:
+                        transaction_collection.update_one(filter={'_id': id_}, update={'$set': document}, upsert=True)
+                    except Exception as e:
+                        print(e)
 
         return jsonify({'msg': 'Success'}), 200
 
