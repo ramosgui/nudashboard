@@ -34,9 +34,7 @@ def _format_transactions(transactions: List[TransactionModel]):
             'refId': transaction.ref_id,
             'title': transaction.name,
             'rawTitle': transaction.raw_title,
-
             'category': transaction.category,
-
             'amount': round(transaction.amount, 2),
             'dt': _format_date(transaction.time),
             'charges': transaction.charges,
@@ -189,13 +187,10 @@ def transfer_in_transactions():
                                                                                   end_date=end_date,
                                                                                   bill=bill)
 
-    total = positive_value - (negative_value + bill_amount)
-
     return jsonify({
-        'positive': _format_amount(positive_value),
-        'negative': _format_amount(negative_value * -1),
-        'fatura': _format_amount(bill_amount * -1),
-        'total': _format_amount(total)
+        'positive': positive_value,
+        'negative': negative_value,
+        'fatura': bill_amount
     }), 200
 
 
@@ -214,16 +209,13 @@ def last_transfer_in_transactions():
                                                                                   end_date=end_date,
                                                                                   bill=bill)
 
-    total = positive_value - (negative_value + bill_amount)
-
     if isinstance(bill_amount, int):
         bill_amount = _format_amount(bill_amount * -1)
 
     return jsonify({
-        'positive': _format_amount(positive_value),
-        'negative': _format_amount(negative_value * -1),
-        'fatura': _format_amount(bill_amount * -1),
-        'total': _format_amount(total)
+        'positive': positive_value,
+        'negative': negative_value,
+        'fatura': bill_amount
     }), 200
 
 

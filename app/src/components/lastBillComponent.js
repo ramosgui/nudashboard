@@ -33,14 +33,29 @@ export default function SimpleCard() {
   const classes = useStyles();
   /* const bull = <span className={classes.bullet}>•</span>; */
 
-  const [data, setData] = useState({});
+  const [data, setData] = useState({
+    'positive': 0,
+    'negative': 0,
+    'fatura': 0,
+    'total': 0
+  });
 
   useEffect(() => {
     var host = window.location.hostname;
     axios.get('http://' + host + ':5050/transactions/last_transfer_in', {}).then(res => {
-      setData(res.data)
+      const auxData = { ...res.data }
+      auxData['total'] = getTotalValue(auxData.positive, auxData.negative, auxData.fatura)
+      setData(auxData)
     });
   }, [])
+
+  function roundToTwo(num) {    
+    return +(Math.round(num + "e+2")  + "e-2");
+}
+
+  const getTotalValue = (positive, negative, bill_total) => {
+    return positive + negative + bill_total
+  }
 
   return (
     <Card className={classes.root}>
@@ -55,28 +70,28 @@ export default function SimpleCard() {
             <ListItem>
               <ListItemText primary='Entrada' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.positive} />
+                <ListItemText primary={'R$ ' + data.positive} />
               </ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText style={{ width: '10px' }} primary='Gastos Débito' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.negative} />
+                <ListItemText primary={'R$ ' + data.negative} />
               </ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText primary='Fatura Passada' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.fatura} />
+                <ListItemText primary={'R$ ' + data.fatura} />
               </ListItemSecondaryAction>
             </ListItem>
             <Divider/>
             <ListItem>
               <ListItemText primary='Total' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.total} />
+                <ListItemText primary={'R$ ' + roundToTwo(data.total)} />
               </ListItemSecondaryAction>
             </ListItem>
 

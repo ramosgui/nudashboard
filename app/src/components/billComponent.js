@@ -33,17 +33,27 @@ export default function SimpleCard(props) {
   const classes = useStyles();
   /* const bull = <span className={classes.bullet}>•</span>; */
 
-  const [data, setData] = useState({});
+  const [data, setData] = useState({
+    'positive': 0,
+    'negative': 0,
+    'fatura': 0,
+    'total': 0
+  });
 
   useEffect(() => {
     var host = window.location.hostname;
-    var today = new Date();
 
     axios.get('http://' + host + ':5050/transactions/transfer_in', {}).then(res => {
-      setData(res.data)
+      const auxData = { ...res.data }
+      auxData['total'] = getTotalValue(auxData.positive, auxData.negative, auxData.fatura)
+      setData(auxData)
     });
 
   }, [props.updateData])
+
+  const getTotalValue = (positive, negative, bill_total) => {
+    return positive + negative + bill_total
+  }
 
   return (
     <Card className={classes.root}>
@@ -57,23 +67,23 @@ export default function SimpleCard(props) {
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Renda' />
-              <ListItemSecondaryAction><ListItemText primary={data.positive} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + data.positive} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Gastos' />
-              <ListItemSecondaryAction><ListItemText primary={data.negative} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + data.negative} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Fatura do mês' />
-              <ListItemSecondaryAction><ListItemText primary={data.fatura} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + data.fatura} /></ListItemSecondaryAction>
             </ListItem>
 
             <Divider/>
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Total' />
-              <ListItemSecondaryAction><ListItemText primary={data.total} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + data.total}/></ListItemSecondaryAction>
             </ListItem>
 
 

@@ -23,6 +23,11 @@ class TransactionService:
     def _percentile(number1, number2):
         return (number1 / number2) * 100
 
+    @staticmethod
+    def _get_amount_from_transactions(transactions: List[TransactionModel]):
+        transactions_amount = [x.amount for x in transactions]
+        return sum(transactions_amount)
+
     def get_transaction(self, trx_id: str) -> TransactionModel:
         """
 
@@ -177,25 +182,18 @@ class TransactionService:
 
     def get_balance(self, end_date: datetime, start_date: datetime, bill: str):
 
-        positive = self._transactions_repository.get_positive_account_transactions(start_date=start_date,
-                                                                                   end_date=end_date)
+        in_transactions = self._transactions_repository.get_in_account_transactions(start_date=start_date,
+                                                                                    end_date=end_date)
 
-        positive_transactions = [x.amount for x in positive]
-        positive_value = 0
-        if positive_transactions:
-            positive_value = sum(positive_transactions)
+        out_transactions = self._transactions_repository.get_out_account_transactions(start_date=start_date,
+                                                                                      end_date=end_date)
 
-        negative = self._transactions_repository.get_negative_account_transactions(start_date=start_date,
-                                                                                   end_date=end_date)
-
-        negative_transactions = [x.amount for x in negative]
-        negative_value = 0
-        if negative_transactions:
-            negative_value = sum(negative_transactions)
+        in_amount_total = self._get_amount_from_transactions(in_transactions)
+        out_amount_total = self._get_amount_from_transactions(out_transactions)
 
         bill_amount, bill_state = self._transactions_repository.get_bill_amount(bill)
 
-        return positive_value, negative_value, bill_amount, bill_state
+        return round(in_amount_total, 2), round(out_amount_total * -1, 2), round(bill_amount * -1, 2), bill_state
 
     def get_amount(self):
         end_date = datetime.utcnow() - timedelta(hours=3)

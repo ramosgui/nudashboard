@@ -107,13 +107,13 @@ class TransactionRepository:
 
         return amount_by_category
 
-    def get_positive_account_transactions(self, start_date: datetime, end_date: datetime):
+    def get_in_account_transactions(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date,
                                              custom_filters={'category': 'TransferInEvent'})
 
         return transactions
 
-    def get_negative_account_transactions(self, start_date: datetime, end_date: datetime):
+    def get_out_account_transactions(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date,
                                              custom_filters={'category': {'$in': ['BarcodePaymentEvent',
                                                                                   'TransferOutEvent']}})
