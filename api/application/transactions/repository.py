@@ -74,27 +74,32 @@ class TransactionRepository:
         end_date = datetime.utcnow()
         start_date = end_date - relativedelta(months=1)
 
-        future_transactions = []
         ref_control = {}
 
         transactions = self.get_transactions(start_date, end_date)
         for trx in transactions:
-            if trx.index is not None:
-                if trx.ref_id not in ref_control:
-                    ref_control[trx.ref_id] = trx
 
-                    formatted_index = trx.index+1
-                    if formatted_index < trx.charges:
-                        trx.index = formatted_index
-                        trx.time = trx.time + relativedelta(months=1)
-                        future_transactions.append(trx)
+            if trx.charges_paid is not None:
+
+                if trx.ref_id not in ref_control:
+                    trx.index += 1
+                    trx.time = trx.time + relativedelta(months=1)
+                    if trx.charges_paid > trx.charges:
+                        ref_control[trx.ref_id] = None
+                    else:
+                        ref_control[trx.ref_id] = trx
 
                 else:
-                    saved = ref_control[trx.ref_id]
-                    if trx.index > saved.index:
-                        raise ValueError('Algo errado nao esta certo')
+                    if ref_control[trx.ref_id]:
+                        if trx.charges_paid >= ref_control[trx.ref_id].charges_paid:
+                            trx.index += 1
+                            trx.time = trx.time + relativedelta(months=1)
+                            if trx.charges_paid > trx.charges:
+                                ref_control[trx.ref_id] = None
+                            else:
+                                ref_control[trx.ref_id] = trx
 
-        return future_transactions
+        return [x for x in list(ref_control.values()) if x]
 
     def get_trx_amount_by_categories(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)
