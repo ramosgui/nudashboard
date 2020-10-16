@@ -227,16 +227,16 @@ def account_amount():
 
     if bill_state and bill_state != 'open':
         bill_out = 'FATURA PAGA'
-        total = _format_amount(account_total['value'])
+        total = account_total['value']
 
     else:
         account_balance = account_total['value']
-        bill_value = bill_amount * -1
-        bill_out = _format_amount(bill_value)
-        total = _format_amount(account_balance + bill_value)
+        bill_value = bill_amount
+        bill_out = bill_value
+        total = round(account_balance + bill_value, 2)
 
     return jsonify({
-        'account_total': _format_amount(account_total['value']),
+        'account_total': account_total['value'],
         'bill_out': bill_out,
         'total': total
     }), 200
@@ -265,7 +265,6 @@ def get_fixed_transactions_amount():
                                                                                   end_date=params['endDate'])
 
     return jsonify({
-        'positive': _format_amount(positive_amount),
-        'negative': _format_amount(negative_amount * -1),
-        'total': _format_amount(positive_amount + (negative_amount * -1))
+        'positive': positive_amount,
+        'negative': negative_amount
     }), 200

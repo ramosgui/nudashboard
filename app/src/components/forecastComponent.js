@@ -34,7 +34,10 @@ export default function SimpleCard(props) {
   /* const bull = <span className={classes.bullet}>•</span>; */
 
 
-  const [forecast, setForecast] = useState({});
+  const [forecast, setForecast] = useState({
+    'positive': 0,
+    'negative': 0
+  });
 
   useEffect(() => {
     var host = window.location.hostname;
@@ -45,6 +48,14 @@ export default function SimpleCard(props) {
     });
 
   }, [props.updateData])
+
+  const getTotalValue = (positive, negative) => {
+    return roundToTwo(positive + negative)
+  }
+
+  function roundToTwo(num) {    
+    return +(Math.round(num + "e+2")  + "e-2");
+}
 
   return (
     <Card className={classes.root}>
@@ -58,12 +69,12 @@ export default function SimpleCard(props) {
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Renda' />
-              <ListItemSecondaryAction><ListItemText primary={forecast.positive} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + forecast.positive} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Gastos fixos' />
-              <ListItemSecondaryAction><ListItemText primary={forecast.negative} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + forecast.negative} /></ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
@@ -74,7 +85,7 @@ export default function SimpleCard(props) {
             <Divider/>
             <ListItem>
               <ListItemText style={{width: '80px'}} primary='Total' />
-              <ListItemSecondaryAction><ListItemText primary={forecast.total} /></ListItemSecondaryAction>
+              <ListItemSecondaryAction><ListItemText primary={'R$ ' + getTotalValue(forecast.positive, forecast.negative)} /></ListItemSecondaryAction>
             </ListItem>
 
 

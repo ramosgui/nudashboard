@@ -55,14 +55,14 @@ export default function SimpleCard() {
             <ListItem>
               <ListItemText primary='Conta' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.account_total} />
+                <ListItemText primary={'R$ ' + data.account_total} />
               </ListItemSecondaryAction>
             </ListItem>
 
             <ListItem>
               <ListItemText style={{ width: '10px' }} primary='Fatura do mês' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.bill_out} />
+                <ListItemText primary={'R$ ' + data.bill_out} />
               </ListItemSecondaryAction>
             </ListItem>
 
@@ -70,7 +70,7 @@ export default function SimpleCard() {
             <ListItem>
               <ListItemText primary='Total' />
               <ListItemSecondaryAction>
-                <ListItemText primary={data.total} />
+                <ListItemText primary={'R$ ' + data.total} />
               </ListItemSecondaryAction>
             </ListItem>
 

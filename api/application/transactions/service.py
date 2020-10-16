@@ -235,7 +235,7 @@ class TransactionService:
             transactions = self._transactions_repository.get_transactions_by_name(trx.name)
             new_negative_amount += sum([x.amount for x in transactions]) / len(transactions)
 
-        return new_positive_amount, new_negative_amount
+        return round(new_positive_amount, 2), round(new_negative_amount, 2) * -1
 
     def get_bill(self, bill: str):
         amount, _ = self._transactions_repository.get_bill_amount(bill)
