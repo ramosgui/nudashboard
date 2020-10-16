@@ -14,17 +14,6 @@ def _convert_dt_str_to_dt(str_dt: str, dt_format: str = '%Y-%m-%dT%H:%M:%S.%fZ')
     return datetime.strptime(str_dt, dt_format)
 
 
-def _format_amount(amount: float):
-    # todo ficar no front end futuramente
-    value = '{:,.2f}'.format(amount).strip()
-    value = 'R$ {}'.format(value)
-    return value.replace(',', '#').replace('.', ',').replace('#', '.')
-
-
-def _format_date(dt: datetime):
-    return dt.strftime('%d/%m/%Y')
-
-
 def _format_transactions(transactions: List[TransactionModel]):
     formatted_transactions = []
     for transaction in transactions:
@@ -36,7 +25,7 @@ def _format_transactions(transactions: List[TransactionModel]):
             'rawTitle': transaction.raw_title,
             'category': transaction.category,
             'amount': round(transaction.amount, 2),
-            'dt': _format_date(transaction.time),
+            'dt': transaction.time.strftime('%d/%m/%Y'),
             'charges': transaction.charges,
             'chargesPaid': transaction.charges_paid,
             'type': transaction.type,
@@ -85,7 +74,7 @@ def get_future_transactions():
     formatted_categories = _format_categories(categories)
 
     return jsonify({'qtd': len(transactions),
-                    'value': _format_amount(sum([x.amount for x in transactions])),
+                    'value': round(sum([x.amount for x in transactions]), 2),
                     'transactions': formatted_transactions,
                     'categories': formatted_categories}), 200
 
@@ -96,8 +85,8 @@ def get_amount_by_category():
 
     sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
     amount_by_category = [
-        {'category': x['category'], 'value': _format_amount(x['value']), 'percentileFull': x['percent_full'],
-         'lastFullValue': _format_amount(x['last_full_value'])} for x in sorted_amount_by_category]
+        {'category': x['category'], 'value': x['value'], 'percentileFull': x['percent_full'],
+         'lastFullValue': x['last_full_value']} for x in sorted_amount_by_category]
 
     return jsonify(amount_by_category), 200
 
@@ -208,9 +197,6 @@ def last_transfer_in_transactions():
     positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
                                                                                   end_date=end_date,
                                                                                   bill=bill)
-
-    if isinstance(bill_amount, int):
-        bill_amount = _format_amount(bill_amount * -1)
 
     return jsonify({
         'positive': positive_value,

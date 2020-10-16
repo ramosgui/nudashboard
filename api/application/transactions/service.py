@@ -66,12 +66,6 @@ class TransactionService:
                 if transactions_by_name:
                     new_positive_amount = sum([x.amount for x in transactions_by_name]) / len(transactions_by_name)
 
-                # trx_model = TransactionModel(category_map_collection=self._repository._category_mapping_collection,
-                #                              title_mapping_collection=self._repository._title_mapping_collection,
-                #                              id_=None, post_date=datetime.utcnow(), raw_title=fixed_transaction,
-                #                              raw_category=transactions_by_name[-1].raw_category, charges=None, amount=new_positive_amount, ref_id=None,
-                #                              index=None, type_=transactions_by_name[-1].type, is_fixed='not')
-
                     trx_model = self._transactions_repository._create_transaction_model({
                         '_id': transactions_by_name[-1].id, 'post_date': datetime.utcnow(), 'title': transactions_by_name[-1].raw_title,
                         'category': transactions_by_name[-1]._raw_category, 'amount': new_positive_amount,
@@ -149,8 +143,8 @@ class TransactionService:
 
             formatted = {
                 'category': category,
-                'value': amount,
-                'last_full_value': last_full_amount,
+                'value': round(amount, 2),
+                'last_full_value': round(last_full_amount, 2),
                 'percent_full': percent_full
             }
 

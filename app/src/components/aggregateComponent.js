@@ -49,10 +49,10 @@ export default function AgreggateComponent(props) {
 
   const amountPercent = (percentile, value, msg) => {
     if (percentile.includes('+') === true) {
-      return <Tooltip title={<div><div>{msg}</div><div>{value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: red[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
+      return <Tooltip title={<div><div>{msg}</div><div>{'R$ ' + value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: red[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
     }
     else if (percentile.includes('-') === true){
-      return <Tooltip title={<div><div>{msg}</div><div>{value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: green[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
+      return <Tooltip title={<div><div>{msg}</div><div>{'R$ ' + value}</div></div>} placement="top-start" arrow interactive><span style={{fontSize: '10px', color: green[500], marginLeft: '5px'}}>({percentile})</span></Tooltip>
     }
     else if (percentile === '0.0%') {
       return <span style={{fontSize: '10px', marginLeft: '5px'}}>({percentile})</span>
@@ -100,7 +100,7 @@ export default function AgreggateComponent(props) {
             title: "Valor", 
             field: "value",
             render: rowData => <div>
-              <span>{rowData.value}</span>
+              <span>{'R$ ' + rowData.value}</span>
               <span>{amountPercent(rowData.percentileFull, rowData.lastFullValue, "Mês passado todo: ")}</span>
             </div>
           }
