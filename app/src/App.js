@@ -11,11 +11,11 @@ import AggregateComponent from './components/aggregateComponent'
 import TableExampleComponent from './components/tableExampleComponent'
 import FutureTransactionsComponent from './components/futureTransactionsComponent'
 import SyncModalComponent from './components/syncModalComponent'
-import BillComponent from './components/billComponent'
-import LastBillComponent from './components/lastBillComponent'
-import AccountAmountComponent from './components/accountAmountComponent'
+import CurrentMonthOverview from './components/cards/currentMonthCardComponent'
+import LastMonthCardComponent from './components/cards/lastMonthCardComponent'
+import AccountAmountComponent from './components/cards/accountCardComponent'
 import LastUpdateDate from './components/lastUpdateComponent'
-import ForecastComponent from './components/forecastComponent'
+import ForecastCardComponent from './components/cards/forecastCardComponent'
 
 const drawerWidth = 240;
 
@@ -139,16 +139,16 @@ export default function MiniDrawer() {
             <SyncModalComponent state={syncModalState} toggleState={toggleSyncModalState} openSnackBar={handleOpenSnackBar} />
           </Grid>
           <Grid item xs={12} sm={3}>
-            <LastBillComponent />
+            <LastMonthCardComponent updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <BillComponent updateData={updateData}/>
+            <CurrentMonthOverview updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <ForecastComponent updateData={updateData}/>
+            <ForecastCardComponent updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <AccountAmountComponent />
+            <AccountAmountComponent updateData={updateData}/>
           </Grid>
         </Grid>
 

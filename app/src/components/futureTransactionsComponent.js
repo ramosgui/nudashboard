@@ -66,6 +66,10 @@ export default function SimpleAccordion(props) {
     return <div><span>{transaction.title}</span> <span>{transaction.charges ? "(" + transaction.chargesPaid + "/" + transaction.charges + ")" : undefined}</span></div>
   }
 
+  function roundToTwo(num) {    
+    return +(Math.round(num + "e+2")  + "e-2");
+}
+
   return (
     <div className={classes.root}>
       <Accordion>
@@ -74,7 +78,7 @@ export default function SimpleAccordion(props) {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography className={classes.heading}><span style={{fontWeight: "bold"}}>{tableData.qtd}</span> Transações Futuras (Previsão) <span>({tableData.value})</span></Typography>
+          <Typography className={classes.heading}><span style={{fontWeight: "bold"}}>{tableData.qtd}</span> Transações Futuras (Previsão) <span>({'R$ '+roundToTwo(tableData.value)})</span></Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography style={{ width: '100%' }} >

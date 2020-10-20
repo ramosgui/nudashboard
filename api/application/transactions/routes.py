@@ -206,25 +206,21 @@ def last_transfer_in_transactions():
 
 
 @transaction_blueprint.route('/account/amount', methods=['GET'])
-def account_amount():
+def get_account_amount_info():
     account_total, positive_value, negative_value, bill_amount, bill_state = current_app.app_config.transaction_service.get_amount()
     if account_total is None:
         account_total = {'value': 0}
 
     if bill_state and bill_state != 'open':
-        bill_out = 'FATURA PAGA'
-        total = account_total['value']
+        bill_out = None
 
     else:
-        account_balance = account_total['value']
         bill_value = bill_amount
         bill_out = bill_value
-        total = round(account_balance + bill_value, 2)
 
     return jsonify({
         'account_total': account_total['value'],
-        'bill_out': bill_out,
-        'total': total
+        'bill_out': bill_out
     }), 200
 
 
