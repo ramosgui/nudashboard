@@ -63,6 +63,13 @@ export default function AgreggateComponent(props) {
 
   }
 
+  const monthRange = () => {
+    var today = new Date();
+    var lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0);
+    alert(lastDayOfMonth);
+  }
+
+
   useEffect(() => {
 
     var host = window.location.hostname;
@@ -106,7 +113,7 @@ export default function AgreggateComponent(props) {
           }
         ]}
         data={data}
-        title="Mês atual"
+        title="Mês atual (Todo o mês)" 
       />
     </div>
   );

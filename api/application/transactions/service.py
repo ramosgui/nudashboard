@@ -120,8 +120,10 @@ class TransactionService:
 
     def get_amount_by_category(self):
         # todo realizar conversão por timezone
-        end_date = datetime.utcnow() - timedelta(hours=3)
-        start_date = datetime(end_date.year, end_date.month, 1)
+        end_date = datetime.utcnow() + relativedelta(months=1)
+        end_date = datetime(end_date.year, end_date.month, 1, 3) - timedelta(days=1)
+        datetime(end_date.year, end_date.month, 1, 3) - timedelta(days=1)
+        start_date = datetime(end_date.year, end_date.month, 1, 3)
 
         last_start_date = start_date - relativedelta(months=1)
         final_end_date = start_date - relativedelta(seconds=1)
