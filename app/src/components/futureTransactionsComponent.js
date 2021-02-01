@@ -79,7 +79,7 @@ export default function SimpleAccordion(props) {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography className={classes.heading}><span style={{fontWeight: "bold"}}>{tableData.qtd}</span> Transações Futuras (Previsão) <span>({'R$ '+roundToTwo(tableData.value)})</span></Typography>
+          <Typography className={classes.heading}>+ <span style={{fontWeight: "bold"}}>{tableData.qtd}</span> Transações até ao final do mês (Previsão) <span>({'R$ '+roundToTwo(tableData.value)})</span></Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography style={{ width: '100%' }} >

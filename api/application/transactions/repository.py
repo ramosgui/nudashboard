@@ -95,35 +95,39 @@ class TransactionRepository:
         return transactions
 
     def get_future_transactions(self):
-        end_date = datetime.utcnow()
-        start_date = end_date - relativedelta(months=1)
+        start_date = datetime.utcnow()
+        end_date = start_date + relativedelta(months=1)
+        end_date = datetime(end_date.year, end_date.month, 1) - timedelta(days=1)
+        end_date = end_date + timedelta(hours=3)
 
-        ref_control = {}
+        return self.get_transactions(start_date, end_date)
 
-        transactions = self.get_transactions(start_date, end_date)
-        for trx in transactions:
-
-            if trx.charges_paid is not None:
-
-                if trx.ref_id not in ref_control:
-                    trx.index += 1
-                    trx.time = trx.time + relativedelta(months=1)
-                    if trx.charges_paid > trx.charges:
-                        ref_control[trx.ref_id] = None
-                    else:
-                        ref_control[trx.ref_id] = trx
-
-                else:
-                    if ref_control[trx.ref_id]:
-                        if trx.charges_paid >= ref_control[trx.ref_id].charges_paid:
-                            trx.index += 1
-                            trx.time = trx.time + relativedelta(months=1)
-                            if trx.charges_paid > trx.charges:
-                                ref_control[trx.ref_id] = None
-                            else:
-                                ref_control[trx.ref_id] = trx
-
-        return [x for x in list(ref_control.values()) if x]
+        # ref_control = {}
+        #
+        # transactions = self.get_transactions(start_date, end_date)
+        # for trx in transactions:
+        #
+        #     if trx.charges_paid is not None:
+        #
+        #         if trx.ref_id not in ref_control:
+        #             trx.index += 1
+        #             trx.time = trx.time + relativedelta(months=1)
+        #             if trx.charges_paid > trx.charges:
+        #                 ref_control[trx.ref_id] = None
+        #             else:
+        #                 ref_control[trx.ref_id] = trx
+        #
+        #         else:
+        #             if ref_control[trx.ref_id]:
+        #                 if trx.charges_paid >= ref_control[trx.ref_id].charges_paid:
+        #                     trx.index += 1
+        #                     trx.time = trx.time + relativedelta(months=1)
+        #                     if trx.charges_paid > trx.charges:
+        #                         ref_control[trx.ref_id] = None
+        #                     else:
+        #                         ref_control[trx.ref_id] = trx
+        #
+        # return [x for x in list(ref_control.values()) if x]
 
     def get_trx_amount_by_categories(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)
