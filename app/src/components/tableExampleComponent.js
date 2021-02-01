@@ -6,7 +6,7 @@ import MaterialTable, { MTableToolbar } from "material-table";
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from '@material-ui/core/Avatar';
 
-import { green } from '@material-ui/core/colors';
+import { green, grey } from '@material-ui/core/colors';
 import { blue } from '@material-ui/core/colors';
 import { pink } from '@material-ui/core/colors';
 import { red } from '@material-ui/core/colors';
@@ -37,6 +37,7 @@ import HelpIcon from '@material-ui/icons/Help';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import CardTravelIcon from '@material-ui/icons/CardTravel';
 
 /* import DrawerCategory from './drawerCategoryComponent' */
 import DrawerEditTransaction from './drawerEditComponent'
@@ -65,8 +66,20 @@ const tableIcons = {
   Category: forwardRef((props, ref) => <FormatListBulletedOutlinedIcon {...props} ref={ref} />),
 };
 
-const amountFunction = (amount) => {
-  return <div>{'R$ ' + amount}</div>
+const amountFunction = (rowData) => {
+
+  if (rowData.isIgnored === true) {
+    return <div style={{ color: grey[500] }}>{'R$ ' + rowData.amount}</div>
+  }
+  else {
+    return <div>{'R$ ' + rowData.amount}</div>
+  }
+
+}
+
+const getTitle = (rowData) => {
+
+
 }
 
 export default function TransactionsTableComponent(props) {
@@ -116,27 +129,48 @@ export default function TransactionsTableComponent(props) {
     return true;
   }
 
+  const getTypeIcon = (type) => {
+    if (type === 'card_present') {
+      return <CreditCardIcon />
+    } else if (type === 'card_not_present') {
+      return <CardTravelIcon/>
+    } else {
+      return <AccountBalanceWalletIcon />
+    }
+  }
+
   const getCategoryInfo = (rowData) => {
     var categoryInfo = tableData.categories[rowData.category]
 
     if (!categoryInfo) {
-      var categoryInfo = {'name': rowData.category, 'color': ['grey', 500]}
+      var categoryInfo = { 'name': rowData.category, 'color': ['grey', 500] }
+    }
+
+    var iconColor = colors[categoryInfo.color[0]][categoryInfo.color[1]]
+    var helpIconBlueColor = blue[500]
+    var helpIconPinkColor = pink[500]
+
+    if (rowData.isIgnored === true) {
+      var iconColor = colors['grey'][500]
+      var helpIconBlueColor = grey[500]
+      var helpIconPinkColor = grey[500]
+
     }
 
     return <ListItem>
-      <ListItemIcon style={{minWidth: '50px'}}>
-        <Avatar style={{ backgroundColor: colors[categoryInfo.color[0]][categoryInfo.color[1]] }} alt={rowData.category}>{icons[categoryInfo.icon]}</Avatar>
+      <ListItemIcon style={{ minWidth: '50px' }}>
+        <Avatar style={{ backgroundColor: iconColor }} alt={rowData.category}>{icons[categoryInfo.icon]}</Avatar>
       </ListItemIcon>
       <ListItemText primary={<div>
         <div style={{ float: 'left' }}>{rowData.category}</div>
         <Tooltip title={
-              <div>
-                <div>{rowData.sameCategoryCheck ? "Nome mapeado automaticamente pela opção" : "Categoria default da transação"}</div>
-                <div>{rowData.sameCategoryCheck ? '"Sempre usar esta categoria"' : <div></div>}</div>
-              </div>} arrow interactive><div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>{rowData.sameCategoryCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : rowData.useRawCategory ? <HelpIcon style={{ fontSize: 15, color: pink[500] }} /> : <div></div>}</div></Tooltip>
-      </div>}/>
+          <div>
+            <div>{rowData.sameCategoryCheck ? "Nome mapeado automaticamente pela opção" : "Categoria default da transação"}</div>
+            <div>{rowData.sameCategoryCheck ? '"Sempre usar esta categoria"' : <div></div>}</div>
+          </div>} arrow interactive><div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>{rowData.sameCategoryCheck ? <HelpIcon style={{ fontSize: 15, color: helpIconBlueColor }} /> : rowData.useRawCategory ? <HelpIcon style={{ fontSize: 15, color: helpIconPinkColor }} /> : <div></div>}</div></Tooltip>
+      </div>} />
     </ListItem>
-    
+
   }
 
   useEffect(() => {
@@ -190,9 +224,7 @@ export default function TransactionsTableComponent(props) {
               width: '3%'
             },
             render: rowData => {
-              if (rowData.type) {
-                return <Tooltip arrow placement="right" title={rowData.type}>{rowData.type === 'credit' ? <CreditCardIcon /> : <AccountBalanceWalletIcon />}</Tooltip>
-              }
+              return <Tooltip arrow placement="right" title={rowData.type}>{getTypeIcon(rowData.type)}</Tooltip>
             }
           },
           {
@@ -204,24 +236,34 @@ export default function TransactionsTableComponent(props) {
             },
             render: rowData => {
               if (rowData.isFixed === true) {
-                return <Tooltip arrow placement="right" title="Transação definida como recorrente."><LabelImportantIcon style={{ color: green[500] }}/></Tooltip>
+                return <Tooltip arrow placement="right" title="Transação definida como recorrente."><LabelImportantIcon style={{ color: green[500] }} /></Tooltip>
               } else if (rowData.isFixed === 'not') {
-                return <Tooltip arrow placement="right" title="Transação definida como recorrente não realizada no período selecionado."><LabelImportantIcon style={{ color: red[500] }}/></Tooltip>
+                return <Tooltip arrow placement="right" title="Transação definida como recorrente não realizada no período selecionado."><LabelImportantIcon style={{ color: red[500] }} /></Tooltip>
               }
             }
           },
           {
             title: "Nome",
             field: "title",
-            render: rowData => <div>
-              <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
-              <div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>
-                <Tooltip
-                  title={<div><div>Nome mapeado automaticamente pela opção</div><div>"Sempre usar este nome"</div></div>}
-                  arrow interactive>
-                  {rowData.sameNameCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : <div></div>}</Tooltip>
+            render: rowData => {
+              if (rowData.isIgnored === true) {
+                var title = <div style={{ float: 'left', color: grey[500] }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
+              }
+              else {
+                var title = <div style={{ float: 'left' }}>{rowData.title} {rowData.charges ? "(" + rowData.chargesPaid + "/" + rowData.charges + ")" : undefined}</div>
+              }
+
+              return <div>
+                {title}
+                <div style={{ float: 'left', marginTop: '2px', marginLeft: '7px' }}>
+                  <Tooltip
+                    title={<div><div>Nome mapeado automaticamente pela opção</div><div>"Sempre usar este nome"</div></div>}
+                    arrow interactive>
+                    {rowData.sameNameCheck ? <HelpIcon style={{ fontSize: 15, color: blue[500] }} /> : <div></div>}</Tooltip>
+                </div>
               </div>
-            </div>
+
+            },
           },
           {
             title: "Categoria",
@@ -234,11 +276,23 @@ export default function TransactionsTableComponent(props) {
             editable: 'never',
             render: rowData => {
               if (rowData.amount) {
-                return amountFunction(rowData.amount)
+                return amountFunction(rowData)
               }
             }
           },
-          { title: "Data", field: "dt", editable: 'never' },
+          { 
+            title: "Data", 
+            field: "dt", 
+            editable: 'never',
+            render: rowData => {
+              if (rowData.isIgnored === true) {
+                return <div style={{ color: grey[500] }}>{rowData.dt}</div>
+              }
+              else {
+                return <div>{rowData.dt}</div>
+              }
+            }
+          },
         ]}
         data={tableData.transactions}
         actions={[
@@ -273,7 +327,7 @@ export default function TransactionsTableComponent(props) {
       //}}
       />
       {/* {drawer === true ? <DrawerCategory drawerState={drawer} toggleDrawer={toggleDrawer} openDrawer={openDrawer} closeDrawer={closeDrawer} categoryType={calcCategoryType} drawerData={drawerData} /> : <div />} */}
-      {editDrawer === true ? <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType} drawerData={drawerData} setUpdateData={props.setUpdateData} updateData={props.updateData} categories={tableData.categories}/> : <div />}
+      {editDrawer === true ? <DrawerEditTransaction drawerState={editDrawer} toggleDrawer={toggleEditDrawer} openDrawer={openEditDrawer} closeDrawer={closeEditDrawer} categoryType={calcCategoryType} drawerData={drawerData} setUpdateData={props.setUpdateData} updateData={props.updateData} categories={tableData.categories} /> : <div />}
     </div>
   );
 

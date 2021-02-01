@@ -22,6 +22,7 @@ class TransactionModel:
         self.index = index
         self.type = type_
 
+        self.is_ignored = None
         self.use_raw_category = None
 
         self._to_save = {}
@@ -34,8 +35,8 @@ class TransactionModel:
 
     @property
     def charges_paid(self):
-        if self.charges and self.charges > 1:
-            return self.index + 1
+        if self.index:
+            return self.index
 
     @property
     def is_fixed(self):
@@ -70,6 +71,7 @@ class TransactionModel:
             title_by_trx_id = self._title_mapping_collection.find_one({'_id': self.id})
             if title_by_trx_id and title_by_trx_id['value']:
                 name = title_by_trx_id['value']
+                self.is_ignored = title_by_trx_id.get('is_ignored', False)
 
         same_name_check = None
         if title_by_raw_title.get('value') and not title_by_trx_id:

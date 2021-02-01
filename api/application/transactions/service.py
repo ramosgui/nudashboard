@@ -34,7 +34,7 @@ class TransactionService:
         :param trx_id:
         :return:
         """
-        return self._transactions_repository.get_transaction(trx_id=trx_id)
+        return self._transactions_repository.get_transaction(event_id=trx_id)
 
     def get_transactions(self, start_date: str, end_date: str):
         if 'T' in start_date:
@@ -45,7 +45,7 @@ class TransactionService:
 
         if 'T' in end_date:
             dt = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-            end_dt = dt.replace(hour=0)
+            end_dt = dt - timedelta(hours=3)
         else:
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
@@ -66,7 +66,7 @@ class TransactionService:
                 if transactions_by_name:
                     new_positive_amount = sum([x.amount for x in transactions_by_name]) / len(transactions_by_name)
 
-                    trx_model = self._transactions_repository._create_transaction_model({
+                    trx_model = self._transactions_repository._create_event_model({
                         '_id': transactions_by_name[-1].id, 'post_date': datetime.utcnow(), 'title': transactions_by_name[-1].raw_title,
                         'category': transactions_by_name[-1]._raw_category, 'amount': new_positive_amount,
                         'type': transactions_by_name[-1].type

@@ -4,69 +4,14 @@ import uuid
 from datetime import datetime, timedelta
 from io import BytesIO
 
+from dateutil.relativedelta import relativedelta
 from flask import Blueprint, request, jsonify, current_app
+from pymongo.errors import DuplicateKeyError
 from pynubank import Nubank
 
+from application.sync.events.factory import account_event_factory, credit_event_factory
+
 synchronize_blueprint = Blueprint(name='synchronize_blueprint', import_name='synchronize_blueprint')
-
-
-def _format_bill_transaction(trx: dict, bill_id: str):
-    if trx['title'] == 'Pagamento recebido':
-        return {}
-
-    trx['_id'] = trx['id']
-
-    post_date = datetime.strptime(trx['post_date'], '%Y-%m-%d')
-    trx['post_date'] = post_date
-    trx['_id'] = trx['id']
-    trx['amount'] = trx['amount'] / 100
-    trx['created_at'] = datetime.utcnow().isoformat()
-
-    trx.pop('id')
-
-    trx['type'] = 'credit'
-
-    ref_id = trx['href'].split('/')[-1]
-    trx['ref_id'] = ref_id
-    trx.pop('href')
-
-    trx['bill_id'] = bill_id
-
-    if not trx.get('category'):
-        trx['category'] = trx['type_detail']
-
-    if trx.get('charges') and trx['charges'] == 1:
-        trx.pop('index')
-        trx.pop('charges')
-
-    return trx
-
-
-def _format_account_transaction(trx: dict):
-    if trx['title'] == 'Pagamento da fatura':
-        return
-
-    trx['post_date'] = datetime.strptime(trx['postDate'], '%Y-%m-%d')
-    trx['type'] = 'account'
-    trx['_id'] = trx['id']
-    trx['category'] = trx['__typename']
-    trx.pop('__typename')
-    trx.pop('id')
-    trx.pop('postDate')
-    trx['created_at'] = datetime.utcnow().isoformat()
-
-    if trx.get('originAccount'):
-        trx['title'] = f'{trx["title"]} - {trx["originAccount"]["name"]}'
-        trx.pop('originAccount')
-
-    if trx.get('destinationAccount'):
-        trx['title'] = f'{trx["title"]} - {trx["destinationAccount"]["name"]}'
-        trx.pop('destinationAccount')
-
-    if trx['category'] == 'BarcodePaymentEvent':
-        trx['title'] = f'{trx["title"]} - {trx["detail"]}'
-
-    return trx
 
 
 @synchronize_blueprint.route('/sync/qr_code', methods=['GET'])
@@ -90,96 +35,67 @@ def sync():
     nu.authenticate_with_qr_code(req['cpf'], req['password'], req['qr_uuid'])
 
     mongodb = current_app.app_config.mongodb
-    transaction_collection = mongodb.card_transactions_collections
-    current_bill_info_collection = mongodb.current_bill_info_collection
+    account_feed_collection = mongodb.account_feed_collection
+    credit_feed_collection = mongodb.credit_feed_collection
 
-    bill_info = None
-    bills = nu.get_bills()
-    for bill in bills:
-        if datetime.utcnow().strftime('%Y-%m') in bill['summary']['close_date']:
-            bill_info = bill
+    account_feed = nu.get_account_feed()
+    card_feed = nu.get_card_feed()['events']
 
-    current_bill_info_collection.update_one(filter={'_id': 'account_balance'},
-                                            update={'$set': {'value': nu.get_account_balance()}},
-                                            upsert=True)
+    # f = open('fake_account_feed.txt', 'r')
+    # account_feed = json.loads(f.read())
+    # f.close()
+    #
+    # f = open('fake_card_feed.txt', 'r')
+    # credit_feed = json.loads(f.read())['events']
+    # f.close()
 
-    if bill_info:
-        latest_bill = bills[bills.index(bill_info)+1]
-        future_bill = bills[bills.index(bill_info)-1]
-
-        current_bill_info_collection.update_one(filter={'_id': 'current_bill'},
-                                                update={'$set': {
-                                                    'total_balance': bill_info['summary']['total_balance'],
-                                                    'state': bill_info['state']
-                                                }},
-                                                upsert=True)
-
-        current_bill_info_collection.update_one(filter={'_id': 'lastest_bill'},
-                                                update={'$set': {
-                                                    'total_balance': latest_bill['summary']['total_balance'],
-                                                    'state': latest_bill['state']
-                                                }},
-                                                upsert=True)
-
-        current_bill_info_collection.update_one(filter={'_id': 'future_bill'},
-                                                update={'$set': {
-                                                    'total_balance': future_bill['summary']['total_balance'],
-                                                    'state': future_bill['state']
-                                                }},
-                                                upsert=True)
-
-        current_bill_info_collection.update_one(filter={'_id': 'latest_update_dt'},
-                                                update={'$set': {
-                                                    'dt': datetime.utcnow().isoformat()}
-                                                },
-                                                upsert=True)
-
-        current_bill_id = str(uuid.uuid4())
-        latest_bill_id = latest_bill['id']
-
-        open_bill_transactions = nu.get_bill_details(bill_info)['bill']['line_items']
-        latest_bill_transactions = nu.get_bill_details(latest_bill)['bill']['line_items']
-        account_transactions = nu.get_account_statements()
-
-        for trx in account_transactions:
-            formatted_trx = _format_account_transaction(trx=trx)
+    for event in account_feed:
+        transaction_model = account_event_factory(event)
+        if transaction_model:
             try:
-                transaction_collection.remove({'_id': formatted_trx['_id']})
-                transaction_collection.insert_one(formatted_trx)
+                account_feed_collection.insert_one(transaction_model.as_dict())
+            except DuplicateKeyError:
+                pass
             except Exception as e:
-                print(e)
+                raise e
 
-        for trx in open_bill_transactions:
-            document = _format_bill_transaction(trx=trx, bill_id=current_bill_id)
-            if document:
+    for event in card_feed:
+        charges = event.get('details', {}).get('charges', {}).get('count')
+
+        if charges:
+            i = 0
+            while i < charges:
+
+                time_ = datetime.strptime(event['time'], '%Y-%m-%dT%H:%M:%SZ')
+                t = time_ + relativedelta(months=i)
+
+                new_event = event.copy()
+                new_event['id'] = new_event['id'] + f'_{i}'
+                new_event['time'] = t.isoformat() + 'Z'
+                new_event['amount'] = event['details']['charges']['amount']
+                new_event['charges'] = charges
+                new_event['index'] = i+1
+                event_model = credit_event_factory(new_event)
+
                 try:
-                    transaction_collection.insert_one(document)
+                    credit_feed_collection.insert_one(event_model.as_dict())
+                except DuplicateKeyError:
+                    pass
                 except Exception as e:
-                    document_update = document.copy()
-                    document_update.pop('created_at')
-                    id_ = document_update.pop('_id')
-                    try:
-                        transaction_collection.update_one(filter={'_id': id_}, update={'$set': document}, upsert=True)
-                    except Exception as e:
-                        print(e)
+                    raise e
 
-        for trx in latest_bill_transactions:
-            document = _format_bill_transaction(trx=trx, bill_id=latest_bill_id)
-            if document:
+                i = i + 1
+        else:
+            event_model = credit_event_factory(event)
+            if event_model:
                 try:
-                    transaction_collection.insert_one(document)
+                    credit_feed_collection.insert_one(event_model.as_dict())
+                except DuplicateKeyError:
+                    pass
                 except Exception as e:
-                    document_update = document.copy()
-                    document_update.pop('created_at')
-                    id_ = document_update.pop('_id')
-                    try:
-                        transaction_collection.update_one(filter={'_id': id_}, update={'$set': document}, upsert=True)
-                    except Exception as e:
-                        print(e)
+                    raise e
 
-        return jsonify({'msg': 'Success'}), 200
-
-    return jsonify({'msg': 'Internal server error.'}), 500
+    return jsonify({'msg': 'Success'}), 200
 
 
 @synchronize_blueprint.route('/sync/last_updated', methods=['GET'])

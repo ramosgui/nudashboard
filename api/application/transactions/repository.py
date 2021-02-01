@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from dateutil.relativedelta import relativedelta
@@ -15,37 +15,52 @@ class TransactionRepository:
         self._current_bill_info_collection = mongodb.current_bill_info_collection
         self._fixed_transaction_collection = mongodb.fixed_transaction_collection
 
-    def _create_transaction_model(self, raw_trx: dict):
-        trx_model = TransactionModel(id_=raw_trx['_id'], post_date=raw_trx['post_date'], raw_title=raw_trx['title'],
-                                     raw_category=raw_trx['category'], amount=raw_trx['amount'],
-                                     charges=raw_trx.get('charges'), ref_id=raw_trx.get('ref_id'),
-                                     category_map_collection=self._category_mapping_collection,
-                                     title_mapping_collection=self._title_mapping_collection,
-                                     fixed_transaction_collection=self._fixed_transaction_collection,
-                                     index=raw_trx.get('index'), type_=raw_trx['type'])
+        self._account_feed_collection = mongodb.account_feed_collection
+        self._credit_feed_collection = mongodb.credit_feed_collection
 
-        return trx_model
+    def _create_event_model(self, raw_trx: dict):
+        event_model = TransactionModel(id_=raw_trx['_id'], post_date=raw_trx['post_date'], raw_title=raw_trx['title'],
+                                       raw_category=raw_trx['category'], amount=raw_trx['amount'],
+                                       charges=raw_trx.get('charges'), ref_id=raw_trx.get('ref_id'),
+                                       category_map_collection=self._category_mapping_collection,
+                                       title_mapping_collection=self._title_mapping_collection,
+                                       fixed_transaction_collection=self._fixed_transaction_collection,
+                                       index=raw_trx.get('index'), type_=raw_trx.get('type'))
 
-    def get_transaction(self, trx_id: str) -> TransactionModel:
-        trx = self._transaction_collection.find_one({'_id': trx_id})
-        if trx:
-            return self._create_transaction_model(trx)
+        return event_model
+
+    def get_transaction(self, event_id: str) -> TransactionModel:
+        event = self._account_feed_collection.find_one({'_id': event_id})
+        if event:
+            return self._create_event_model(event)
+
+        event = self._credit_feed_collection.find_one({'_id': event_id})
+        if event:
+            return self._create_event_model(event)
 
     def get_transactions(self, start_date: datetime, end_date: datetime, custom_filters: dict = None):
         filters_ = {
-            'post_date': {'$gte': start_date, '$lte': end_date}
+            'post_date': {'$gte': start_date + timedelta(hours=3), '$lte': end_date + timedelta(hours=3)}
         }
 
         if custom_filters:
             filters_.update(custom_filters)
 
-        result = self._transaction_collection.find(filters_).sort([('post_date', -1), ('charges', 1)])
+        account_events = self._account_feed_collection.find(filters_)
 
-        transactions = []
-        for trx in result:
-            transactions.append(self._create_transaction_model(trx))
+        credit_filter = filters_.copy()
+        credit_filter['category'] = {'$in': ['transaction']}
 
-        return transactions
+        credit_events = self._credit_feed_collection.find(credit_filter)
+
+        events = []
+        for event in account_events:
+            events.append(self._create_event_model(event))
+
+        for event in credit_events:
+            events.append(self._create_event_model(event))
+
+        return events
 
     def get_fixed_transactions_new(self):
         transactions = []
@@ -60,13 +75,21 @@ class TransactionRepository:
         for trx in self._title_mapping_collection.find({'value': name}):
             trx_ids.append(trx['_id'])
 
-        trxs_by_id = self._transaction_collection.find({'_id': {'$in': trx_ids}})
+        trxs_by_id = self._credit_feed_collection.find({'_id': {'$in': trx_ids}})
         for trx_id in trxs_by_id:
-            transactions.append(self._create_transaction_model(trx_id))
+            transactions.append(self._create_event_model(trx_id))
 
-        trxs_by_name = self._transaction_collection.find({'title': {'$in': trx_ids}})
+        trxs_by_id = self._account_feed_collection.find({'_id': {'$in': trx_ids}})
+        for trx_id in trxs_by_id:
+            transactions.append(self._create_event_model(trx_id))
+
+        trxs_by_name = self._credit_feed_collection.find({'title': {'$in': trx_ids}})
         for trx_name in trxs_by_name:
-            transactions.append(self._create_transaction_model(trx_name))
+            transactions.append(self._create_event_model(trx_name))
+
+        trxs_by_name = self._account_feed_collection.find({'title': {'$in': trx_ids}})
+        for trx_name in trxs_by_name:
+            transactions.append(self._create_event_model(trx_name))
 
         return transactions
 

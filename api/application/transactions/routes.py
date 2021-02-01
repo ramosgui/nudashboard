@@ -32,7 +32,8 @@ def _format_transactions(transactions: List[TransactionModel]):
             'sameNameCheck': transaction.same_name_check,
             'sameCategoryCheck': transaction.same_category_check,
             'useRawCategory': transaction.use_raw_category,
-            'isFixed': transaction.is_fixed
+            'isFixed': transaction.is_fixed,
+            'isIgnored': transaction.is_ignored
         }
         formatted_transactions.append(trx)
     return formatted_transactions

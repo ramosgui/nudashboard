@@ -38,14 +38,15 @@ const testCategoryFunction = (categoryName, categories) => {
 
   var categoryInfo = categories[categoryName]
 
-/*   var a = categories()
-  Object.entries(a)
-  .map( ([key, value]) => {
-    if (categoryName === key) {
-      render = value
-    }
-  }); */
+  console.log(categories)
+
+  if (categoryInfo === undefined) {
+    return null
+  } else {
+    console.log(categoryInfo)
     return <Avatar style={{ backgroundColor: colors[categoryInfo.color[0]][categoryInfo.color[1]] }} alt={categoryName}>{icons[categoryInfo.icon]}</Avatar>
+  }
+    
 }
 
 export default function SimpleAccordion(props) {
