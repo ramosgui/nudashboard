@@ -84,7 +84,7 @@ def get_future_transactions():
 def get_amount_by_category():
     amount_by_category = current_app.app_config.transaction_service.get_amount_by_category()
 
-    sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=True)
+    sorted_amount_by_category = sorted(amount_by_category, key=lambda k: k['value'], reverse=False)
     amount_by_category = [
         {'category': x['category'], 'value': x['value'], 'percentileFull': x['percent_full'],
          'lastFullValue': x['last_full_value']} for x in sorted_amount_by_category]
@@ -167,6 +167,8 @@ def update_transaction():
 
 @transaction_blueprint.route('/transactions/transfer_in', methods=['GET'])
 def transfer_in_transactions():
+    # OVERVIEW MES ATUAL
+
     service = current_app.app_config.transaction_service
 
     end_date = datetime.utcnow()
@@ -186,6 +188,8 @@ def transfer_in_transactions():
 
 @transaction_blueprint.route('/transactions/last_transfer_in', methods=['GET'])
 def last_transfer_in_transactions():
+    # OVERVIEW MES PASSADO
+
     service = current_app.app_config.transaction_service
 
     end_date = datetime.utcnow()
@@ -208,6 +212,8 @@ def last_transfer_in_transactions():
 
 @transaction_blueprint.route('/account/amount', methods=['GET'])
 def get_account_amount_info():
+    # CARD CONTA
+
     account_total, positive_value, negative_value, bill_amount, bill_state = current_app.app_config.transaction_service.get_amount()
     if account_total is None:
         account_total = {'value': 0}
@@ -241,6 +247,8 @@ def get_fixed_transactions():
 
 @transaction_blueprint.route('/transactions/fixed/amount', methods=['GET'])
 def get_fixed_transactions_amount():
+    # PLANEJAMENTO MES ATUAL
+
     params = dict(request.args)
     service = current_app.app_config.transaction_service
 

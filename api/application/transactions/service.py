@@ -38,14 +38,12 @@ class TransactionService:
 
     def get_transactions(self, start_date: str, end_date: str):
         if 'T' in start_date:
-            dt = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-            start_dt = dt.replace(hour=0)
+            start_dt = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
         else:
             start_dt = datetime.strptime(start_date, '%Y-%m-%d')
 
         if 'T' in end_date:
-            dt = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-            end_dt = dt - timedelta(hours=3)
+            end_dt = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
         else:
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
@@ -116,9 +114,9 @@ class TransactionService:
         if not op:
             return percent
         elif percent == 0.0:
-            return f"{percent}%"
+            return f"{op}{percent}%"
         else:
-            return f'{op}{percent}%'
+            return f'{percent}%'
 
     def get_amount_by_category(self):
         # todo realizar conversão por timezone
@@ -214,7 +212,8 @@ class TransactionService:
 
         for transaction in transactions:
             if transaction.is_fixed in ['not', True]:
-                if transaction._raw_category == 'TransferInEvent':
+
+                if transaction.amount > 0:
                     positive_transactions.append(transaction)
                 else:
                     negative_transactions.append(transaction)
@@ -229,7 +228,7 @@ class TransactionService:
             transactions = self._transactions_repository.get_transactions_by_name(trx.name)
             new_negative_amount += sum([x.amount for x in transactions]) / len(transactions)
 
-        return round(new_positive_amount, 2), round(new_negative_amount, 2) * -1
+        return round(new_positive_amount, 2), round(new_negative_amount, 2)
 
     def get_bill(self, bill: str):
         amount, _ = self._transactions_repository.get_bill_amount(bill)

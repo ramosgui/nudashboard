@@ -3,6 +3,7 @@ from typing import List
 
 from dateutil.relativedelta import relativedelta
 
+from application.transactions.constants import NEGATIVE_CATEGORIES
 from application.transactions.model import TransactionModel
 
 
@@ -40,7 +41,7 @@ class TransactionRepository:
 
     def get_transactions(self, start_date: datetime, end_date: datetime, custom_filters: dict = None):
         filters_ = {
-            'post_date': {'$gte': start_date + timedelta(hours=3), '$lte': end_date + timedelta(hours=3)}
+            'post_date': {'$gte': start_date, '$lte': end_date}
         }
 
         if custom_filters:
@@ -127,11 +128,15 @@ class TransactionRepository:
     def get_trx_amount_by_categories(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date)
         amount_by_category = {}
+
         for transaction in transactions:
-            if transaction._raw_category in ('TransferInEvent'):
-                continue
-            value = amount_by_category.get(transaction.category, 0) + transaction.amount
-            amount_by_category[transaction.category] = float('%.2f' % value)
+            # TODO ADICIONAR ESSE FILTRO DIRETO NA QUERY
+            if transaction._raw_category in NEGATIVE_CATEGORIES:
+                if transaction.amount > 0:
+                    raise ValueError('Algo errado?', transaction)
+
+                value = amount_by_category.get(transaction.category, 0) + transaction.amount
+                amount_by_category[transaction.category] = float('%.2f' % value)
 
         return amount_by_category
 
@@ -165,3 +170,4 @@ class TransactionRepository:
 # todo em cada preço colocar icone indicando se o gasto é maior ou menor do que os mesmos da categoria
 # todo possivel alterar o title de todas as parcelas
 # todo talvez juntar as transações da msm compra (parcelas)
+# TODO CRIAR HISTORICO DE SALDO EM CONTA, PRA CRIAR A TRAJETÓRIA E SE O DINHEIRO TA ENTRANDO MAIS QUE SAINDO

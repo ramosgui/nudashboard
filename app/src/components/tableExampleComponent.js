@@ -71,6 +71,12 @@ const amountFunction = (rowData) => {
   if (rowData.isIgnored === true) {
     return <div style={{ color: grey[500] }}>{'R$ ' + rowData.amount}</div>
   }
+  else if (rowData.amount > 0) {
+    return <div style={{ color: green[500] }}>{'R$ ' + rowData.amount}</div>
+  }
+  else if (rowData.amount < 0) {
+    return <div style={{ color: red[500] }}>{'R$ ' + rowData.amount}</div>
+  }
   else {
     return <div>{'R$ ' + rowData.amount}</div>
   }
