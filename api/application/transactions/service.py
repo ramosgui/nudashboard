@@ -95,8 +95,11 @@ class TransactionService:
 
         return all_transactions
 
-    def get_future_transactions(self):
-        return self._transactions_repository.get_future_transactions()
+    def get_current_month_events(self):
+        return self._transactions_repository.get_current_month_events()
+
+    def get_next_month_events(self):
+        return self._transactions_repository.get_next_month_events()
 
     def _test(self, value_to_compare, total_value):
         if total_value == 0:
@@ -135,16 +138,16 @@ class TransactionService:
                                                                                                         end_date=final_end_date)
 
         trx_amount_by_categories_to_ret = []
-        for category, last_full_amount in last_full_trx_amount_by_categories.items():
+        for category, amount in trx_amount_by_categories.items():
 
-            amount = trx_amount_by_categories.get(category, 0)
+            last_amount = last_full_trx_amount_by_categories.get(category, 0)
 
-            percent_full = self._test(value_to_compare=amount, total_value=last_full_amount)
+            percent_full = self._test(value_to_compare=amount, total_value=last_amount)
 
             formatted = {
                 'category': category,
                 'value': round(amount, 2),
-                'last_full_value': round(last_full_amount, 2),
+                'last_full_value': round(last_amount, 2),
                 'percent_full': percent_full
             }
 
@@ -174,33 +177,32 @@ class TransactionService:
         trx.same_transaction_charge = same_transaction_charge
         trx.save()
 
-    def get_balance(self, end_date: datetime, start_date: datetime, bill: str):
+    def get_balance(self, end_date: datetime, start_date: datetime):
+        in_events = self._transactions_repository.get_in_transactions(start_date=start_date, end_date=end_date)
+        out_events = self._transactions_repository.get_out_transactions(start_date=start_date, end_date=end_date)
 
-        in_transactions = self._transactions_repository.get_in_account_transactions(start_date=start_date,
-                                                                                    end_date=end_date)
+        now_out_events = []
+        later_out_events = []
+        for out in out_events:
+            if out.index and out.index > 1:
+                later_out_events.append(out)
+            else:
+                now_out_events.append(out)
 
-        out_transactions = self._transactions_repository.get_out_account_transactions(start_date=start_date,
-                                                                                      end_date=end_date)
+        in_amount_total = self._get_amount_from_transactions(in_events)
+        now_out_amount_total = self._get_amount_from_transactions(now_out_events)
+        old_out_amount_total = self._get_amount_from_transactions(later_out_events)
 
-        in_amount_total = self._get_amount_from_transactions(in_transactions)
-        out_amount_total = self._get_amount_from_transactions(out_transactions)
-
-        bill_amount, bill_state = self._transactions_repository.get_bill_amount(bill)
-
-        return round(in_amount_total, 2), round(out_amount_total * -1, 2), round(bill_amount * -1, 2), bill_state
+        return round(in_amount_total, 2), round(now_out_amount_total, 2), round(old_out_amount_total, 2)
 
     def get_amount(self):
         end_date = datetime.utcnow() - timedelta(hours=3)
         start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        bill = 'current_bill'
 
-        positive_value, negative_value, bill_amount, bill_state = self.get_balance(bill=bill,
-                                                                                   start_date=start_date,
-                                                                                   end_date=end_date)
-
+        positive_value, negative_value, old_negative_value = self.get_balance(start_date=start_date, end_date=end_date)
         account_total = self._transactions_repository.get_account_amount()
 
-        return account_total, positive_value, negative_value, bill_amount, bill_state
+        return account_total, positive_value, negative_value, old_negative_value
 
     def get_fixed_transactions(self, start_date: datetime, end_date: datetime) -> List[TransactionModel]:
         return self._transactions_repository.get_fixed_transactions(start_date=start_date, end_date=end_date)
@@ -235,3 +237,7 @@ class TransactionService:
     def get_bill(self, bill: str):
         amount, _ = self._transactions_repository.get_bill_amount(bill)
         return amount
+
+
+# TODO SAIDAS GASTO DO MES
+# TODO SAIDAS GASTO DE FATURA

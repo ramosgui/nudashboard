@@ -9,7 +9,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 
 import AggregateComponent from './components/aggregateComponent'
 import TableExampleComponent from './components/tableExampleComponent'
-import FutureTransactionsComponent from './components/futureTransactionsComponent'
+import NextMonthEventsComponent from './components/nextMonthEvents'
 import SyncModalComponent from './components/syncModalComponent'
 import CurrentMonthOverview from './components/cards/currentMonthCardComponent'
 import LastMonthCardComponent from './components/cards/lastMonthCardComponent'
@@ -157,7 +157,7 @@ export default function MiniDrawer() {
             <AggregateComponent updateTableData={updateTableData} syncModalState={syncModalState} updateData={updateData}/>
           </Grid>
           <Grid item xs={12} sm={9}>
-            <FutureTransactionsComponent /><br></br>
+            <NextMonthEventsComponent /><br></br>
             <TableExampleComponent openSnackBar={handleOpenSnackBar} setUpdateTableData={setUpdateTableData} syncModalState={syncModalState} updateData={updateData} setUpdateData={setUpdateData}/>
           </Grid>
         </Grid>

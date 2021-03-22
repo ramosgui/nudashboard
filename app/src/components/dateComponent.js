@@ -15,12 +15,10 @@ export default function MaterialUIPickers(props) {
 
   const handleStartDateChange = (date) => {
     props.setStartDate(date);
-    console.log(date)
   };
 
   const handleEndDateChange = (date) => {
     props.setEndDate(date);
-    console.log(date)
   };
 
   const submitFunction = (event) => {
@@ -35,7 +33,6 @@ export default function MaterialUIPickers(props) {
       <Grid container>
         <DatePicker
           autoOk
-          disableFuture
           margin="normal"
           id="start-date"
           label="Data Inicial"
@@ -46,7 +43,6 @@ export default function MaterialUIPickers(props) {
         />
         <DatePicker
         autoOk
-        disableFuture
           margin="normal"
           id="end-date"
           label="Data Final"

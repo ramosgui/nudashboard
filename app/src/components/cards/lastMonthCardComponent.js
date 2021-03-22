@@ -10,7 +10,7 @@ export default function SimpleCard(props) {
   const [data, setData] = useState({
     'positive': 0,
     'negative': 0,
-    'fatura': 0
+    'old_negative': 0
   });
 
   useEffect(() => {
@@ -26,8 +26,8 @@ export default function SimpleCard(props) {
       title="Overview do mês passado"
       data={[
         {'Entrada': data.positive}, 
-        {'Gastos débito': data.negative},
-        {'Fatura passada': data.fatura}
+        {'Gastos no mês': data.negative},
+        {'Parcelas pendentes': data.old_negative}
       ]}
       showTotal={true}
     />

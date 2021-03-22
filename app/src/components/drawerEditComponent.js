@@ -83,6 +83,10 @@ export default function TemporaryDrawer(props) {
         auxValues['sameTransactionName'] = props.drawerData.sameNameCheck
         auxValues['fixedTransaction'] = props.drawerData.isFixed
       }
+      else {
+        auxValues['sameTransactionName'] = false
+        auxValues['fixedTransaction'] = false
+      }
 
     }
 
@@ -131,8 +135,6 @@ export default function TemporaryDrawer(props) {
       'fixedTransaction': props.drawerData.isFixed
     }
     setValues(auxValues);
-
-    console.log(props.drawerData)
 
   }, [props.drawerState])
 

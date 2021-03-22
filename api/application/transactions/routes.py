@@ -65,18 +65,18 @@ def get_transactions():
     return jsonify({'transactions': formatted_transactions, 'categories': formatted_categories}), 200
 
 
-@transaction_blueprint.route('/future_transactions', methods=['GET'])
-def get_future_transactions():
-    transactions = current_app.app_config.transaction_service.get_future_transactions()
+@transaction_blueprint.route('/get_next_month_events', methods=['GET'])
+def get_next_month_events():
+    events = current_app.app_config.transaction_service.get_next_month_events()
     categories = current_app.app_config.categories_service.get_categories()
 
-    formatted_transactions = _format_transactions(transactions)
+    formatted_transactions = _format_transactions(events)
     formatted_transactions = sorted(formatted_transactions, key=lambda k: k['dt'], reverse=True)
     formatted_categories = _format_categories(categories)
 
-    return jsonify({'qtd': len(transactions),
-                    'value': round(sum([x.amount for x in transactions]), 2),
-                    'transactions': formatted_transactions,
+    return jsonify({'qtd': len(events),
+                    'value': round(sum([x.amount for x in events]), 2),
+                    'events': formatted_transactions,
                     'categories': formatted_categories}), 200
 
 
@@ -126,6 +126,9 @@ def update_transaction():
         category_col.remove({'_id': info['id']})
         category_col.update_one({'_id': info['trx']}, {'$set': {'value': info['category']}}, upsert=True)
 
+    elif transaction.category != info['category']:
+        category_col.update_one({'_id': info['id']}, {'$set': {'value': info['category']}}, upsert=True)
+
     if info['sameTransactionName'] is False:
         title_col.update_one({'_id': info['id']}, {'$set': {'value': info['trx']}}, upsert=True)
         if transaction.charges:
@@ -159,8 +162,8 @@ def update_transaction():
         except Exception as e:
             print(e)
 
-    if transaction.category != info['category']:
-        category_col.update_one({'_id': info['trx']}, {'$set': {'value': info['category']}}, upsert=True)
+    # if transaction.category != info['category']:
+    #     category_col.update_one({'_id': info['trx']}, {'$set': {'value': info['category']}}, upsert=True)
 
     return jsonify({'msg': 'Transaction has been updated.'}), 200
 
@@ -171,18 +174,19 @@ def transfer_in_transactions():
 
     service = current_app.app_config.transaction_service
 
-    end_date = datetime.utcnow()
-    start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    bill = 'current_bill'
+    end_date = datetime.utcnow() + relativedelta(months=1)
+    end_date = datetime(end_date.year, end_date.month, 1, 3) - timedelta(microseconds=1)
 
-    positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
-                                                                                  end_date=end_date,
-                                                                                  bill=bill)
+    start_date = end_date - timedelta(days=1)
+    start_date = datetime(start_date.year, start_date.month, 1, 3)
+
+    positive_value, now_negative_value, old_negative_value = service.get_balance(start_date=start_date,
+                                                                                 end_date=end_date)
 
     return jsonify({
         'positive': positive_value,
-        'negative': negative_value,
-        'fatura': bill_amount
+        'negative': now_negative_value,
+        'old_negative': old_negative_value
     }), 200
 
 
@@ -192,21 +196,19 @@ def last_transfer_in_transactions():
 
     service = current_app.app_config.transaction_service
 
-    end_date = datetime.utcnow()
-    start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    dt_now = datetime.utcnow()
+    end_date = datetime(dt_now.year, dt_now.month, 1)
+    end_date = end_date - timedelta(microseconds=1) + timedelta(hours=3)
 
-    end_date = start_date - timedelta(microseconds=1)
-    start_date = start_date - relativedelta(months=1)
-    bill = 'lastest_bill'
+    start_date = end_date - timedelta(hours=3)
+    start_date = datetime(start_date.year, start_date.month, 1, 3)
 
-    positive_value, negative_value, bill_amount, bill_state = service.get_balance(start_date=start_date,
-                                                                                  end_date=end_date,
-                                                                                  bill=bill)
+    positive_value, negative_value, old_negative_value = service.get_balance(start_date=start_date, end_date=end_date)
 
     return jsonify({
         'positive': positive_value,
         'negative': negative_value,
-        'fatura': bill_amount
+        'old_negative': old_negative_value
     }), 200
 
 
@@ -214,20 +216,12 @@ def last_transfer_in_transactions():
 def get_account_amount_info():
     # CARD CONTA
 
-    account_total, positive_value, negative_value, bill_amount, bill_state = current_app.app_config.transaction_service.get_amount()
+    account_total, positive_value, negative_value, old_negative_value = current_app.app_config.transaction_service.get_amount()
     if account_total is None:
         account_total = {'value': 0}
 
-    if bill_state and bill_state != 'open':
-        bill_out = None
-
-    else:
-        bill_value = bill_amount
-        bill_out = bill_value
-
     return jsonify({
-        'account_total': account_total['value'],
-        'bill_out': bill_out
+        'account_total': account_total['value']
     }), 200
 
 

@@ -24,11 +24,16 @@ import { blueGrey } from '@material-ui/core/colors';
 import { cyan } from '@material-ui/core/colors';
 import { lightGreen } from '@material-ui/core/colors';
 import { amber } from '@material-ui/core/colors';
+import { deepOrange } from '@material-ui/core/colors';
+import { teal } from '@material-ui/core/colors';
+import { lime } from '@material-ui/core/colors';
+import { brown } from '@material-ui/core/colors';
+import { yellow } from '@material-ui/core/colors';
+
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import FastfoodIcon from '@material-ui/icons/Fastfood';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import PetsIcon from '@material-ui/icons/Pets';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 import DriveEtaIcon from '@material-ui/icons/DriveEta';
 import LocalMallIcon from '@material-ui/icons/LocalMall';
@@ -45,7 +50,25 @@ import LocalHospitalIcon from '@material-ui/icons/LocalHospital';
 import PersonIcon from '@material-ui/icons/Person';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import LocalBarIcon from '@material-ui/icons/LocalBar';
-
+import HomeTwoToneIcon from '@material-ui/icons/HomeTwoTone';
+import LocalMallOutlinedIcon from '@material-ui/icons/LocalMallOutlined';
+import FastfoodTwoToneIcon from '@material-ui/icons/FastfoodTwoTone';
+import LocalMallTwoToneIcon from '@material-ui/icons/LocalMallTwoTone';
+import ShoppingCartTwoToneIcon from '@material-ui/icons/ShoppingCartTwoTone';
+import ReceiptTwoToneIcon from '@material-ui/icons/ReceiptTwoTone';
+import LiveTvTwoToneIcon from '@material-ui/icons/LiveTvTwoTone';
+import GradeTwoToneIcon from '@material-ui/icons/GradeTwoTone';
+import SportsEsportsTwoToneIcon from '@material-ui/icons/SportsEsportsTwoTone';
+import AttachMoneyTwoToneIcon from '@material-ui/icons/AttachMoneyTwoTone';
+import MonetizationOnTwoToneIcon from '@material-ui/icons/MonetizationOnTwoTone';
+import DesktopWindowsTwoToneIcon from '@material-ui/icons/DesktopWindowsTwoTone';
+import RestaurantTwoToneIcon from '@material-ui/icons/RestaurantTwoTone';
+import LaptopChromebookTwoToneIcon from '@material-ui/icons/LaptopChromebookTwoTone';
+import PetsTwoToneIcon from '@material-ui/icons/PetsTwoTone';
+import LocalGasStationTwoToneIcon from '@material-ui/icons/LocalGasStationTwoTone';
+import DriveEtaTwoToneIcon from '@material-ui/icons/DriveEtaTwoTone';
+import LocalTaxiTwoToneIcon from '@material-ui/icons/LocalTaxiTwoTone';
+import LocalHospitalTwoToneIcon from '@material-ui/icons/LocalHospitalTwoTone';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -83,6 +106,7 @@ export const colors = {
   'lightGreen': lightGreen,
   'red': red,
   'deepPurple': deepPurple,
+  'deepOrange': deepOrange,
   'indigo': indigo,
   'amber': amber,
   'grey': grey,
@@ -91,6 +115,10 @@ export const colors = {
   'cyan': cyan,
   'pink': pink,
   'green': green,
+  'teal': teal,
+  'lime': lime,
+  'brown': brown,
+  'yellow': yellow
 }
 
 
@@ -100,7 +128,6 @@ export const icons = {
   'MenuBookIcon': <MenuBookIcon />,
   'ShoppingCartIcon': <ShoppingCartIcon />,
   'HomeIcon': <HomeIcon />,
-  'PetsIcon': <PetsIcon />,
   'LocalHospitalIcon': <LocalHospitalIcon />,
   'DriveEtaIcon': <DriveEtaIcon />,
   'RestaurantMenuIcon': <RestaurantMenuIcon />,
@@ -114,12 +141,25 @@ export const icons = {
   'AccountBalanceWalletIcon': <AccountBalanceWalletIcon />,
   'AttachMoneyIcon': <AttachMoneyIcon />,
   'LocalBarIcon': <LocalBarIcon/>,
-/*   'LocalOfferIcon': <LocalOfferIcon/>,
-  'LocalOfferIcon': <LocalOfferIcon/>,
-  'LocalOfferIcon': <LocalOfferIcon/>,
-  'LocalOfferIcon': <LocalOfferIcon/>,
-  'LocalOfferIcon': <LocalOfferIcon/>,
-  'LocalOfferIcon': <LocalOfferIcon/>, */
+  'HomeTwoToneIcon': <HomeTwoToneIcon/>,
+  'LocalMallOutlinedIcon': <LocalMallOutlinedIcon/>,
+  'FastfoodTwoToneIcon': <FastfoodTwoToneIcon/>,
+  'LocalMallTwoToneIcon': <LocalMallTwoToneIcon/>,
+  'ShoppingCartTwoToneIcon': <ShoppingCartTwoToneIcon/>,
+  'ReceiptTwoToneIcon': <ReceiptTwoToneIcon/>,
+  'LiveTvTwoToneIcon': <LiveTvTwoToneIcon/>,
+  'GradeTwoToneIcon': <GradeTwoToneIcon/>,
+  'SportsEsportsTwoToneIcon': <SportsEsportsTwoToneIcon/>,
+  'AttachMoneyTwoToneIcon': <AttachMoneyTwoToneIcon/>,
+  'MonetizationOnTwoToneIcon': <MonetizationOnTwoToneIcon/>,
+  'DesktopWindowsTwoToneIcon': <DesktopWindowsTwoToneIcon/>,
+  'RestaurantTwoToneIcon': <RestaurantTwoToneIcon/>,
+  'LaptopChromebookTwoToneIcon': <LaptopChromebookTwoToneIcon/>,
+  'PetsTwoToneIcon': <PetsTwoToneIcon/>,
+  'LocalGasStationTwoToneIcon': <LocalGasStationTwoToneIcon/>,
+  'DriveEtaTwoToneIcon': <DriveEtaTwoToneIcon/>,
+  'LocalTaxiTwoToneIcon': <LocalTaxiTwoToneIcon/>,
+  'LocalHospitalTwoToneIcon': <LocalHospitalTwoToneIcon/>
 }
 
 

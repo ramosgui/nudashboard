@@ -11,7 +11,6 @@ const useForm = (callback) => {
   };
 
   const handleSubmit = callback => event => {
-    console.log('called')
     event.preventDefault();
     setLoading(true);
     callback();

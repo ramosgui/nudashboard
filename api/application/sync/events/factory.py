@@ -6,23 +6,27 @@ from application.sync.events.transaction_reversed import CardTransactionReversed
 from application.sync.events.transfer_in import TransferInEvent
 from application.sync.events.transfer_out import TransferOutEvent
 from application.sync.events.transfer_out_reversal import TransferOutReversal
+from application.transactions.constants import ALL_VALID_EVENT_TYPES
 
 
-def account_event_factory(event: dict):
+def get_event_type(event: dict):
+    event_type = event.get('__typename') or event.get('category')
+    if event_type in ALL_VALID_EVENT_TYPES:
+        return event_type
+    raise Exception(f'Unknown event type: {event}')
+
+
+def event_factory(event: dict):
+
     methods_ = {'TransferInEvent': TransferInEvent, 'TransferOutEvent': TransferOutEvent,
                 'DebitPurchaseEvent': DebitPurchase, 'BarcodePaymentEvent': BarcodePayment,
-                'TransferOutReversalEvent': TransferOutReversal}
+                'TransferOutReversalEvent': TransferOutReversal, 'transaction': CardTransaction,
+                'transaction_reversed': CardTransactionReversed}
 
-    method_ = methods_.get(event['__typename'])
-    if method_:
-        return method_(event)
-    elif event['__typename'] == 'GenericFeedEvent' and event['title'] == 'Transferência enviada':
-        return PixOut(event)
-
-
-def credit_event_factory(event: dict):
-    methods_ = {'transaction': CardTransaction, 'transaction_reversed': CardTransactionReversed}
-
-    method_ = methods_.get(event['category'])
-    if method_:
-        return method_(event)
+    event_type = get_event_type(event)
+    if event_type:
+        method_ = methods_.get(event_type)
+        if method_:
+            return method_(event)
+        elif event_type == 'GenericFeedEvent' and event.get('title') == 'Transferência enviada':
+            return PixOut(event)

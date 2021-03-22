@@ -3,7 +3,7 @@ from typing import List
 
 from dateutil.relativedelta import relativedelta
 
-from application.transactions.constants import NEGATIVE_CATEGORIES
+from application.transactions.constants import NEGATIVE_CATEGORIES, ALL_VALID_EVENT_TYPES, POSITIVE_CATEGORIES
 from application.transactions.model import TransactionModel
 
 
@@ -48,11 +48,7 @@ class TransactionRepository:
             filters_.update(custom_filters)
 
         account_events = self._account_feed_collection.find(filters_)
-
-        credit_filter = filters_.copy()
-        credit_filter['category'] = {'$in': ['transaction']}
-
-        credit_events = self._credit_feed_collection.find(credit_filter)
+        credit_events = self._credit_feed_collection.find(filters_)
 
         events = []
         for event in account_events:
@@ -94,12 +90,22 @@ class TransactionRepository:
 
         return transactions
 
-    def get_future_transactions(self):
+    def get_next_month_events(self):
+        start_date = datetime.utcnow()
+        start_date = start_date + relativedelta(months=1)
+        start_date = datetime(start_date.year, start_date.month, 1)
+        start_date = start_date + timedelta(hours=3)
+
+        end_date = start_date + relativedelta(months=1)
+        end_date = end_date - timedelta(microseconds=1)
+
+        return self.get_transactions(start_date, end_date)
+
+    def get_current_month_events(self):
         start_date = datetime.utcnow()
         end_date = start_date + relativedelta(months=1)
         end_date = datetime(end_date.year, end_date.month, 1) - timedelta(days=1)
         end_date = end_date + timedelta(hours=3)
-
         return self.get_transactions(start_date, end_date)
 
         # ref_control = {}
@@ -142,18 +148,20 @@ class TransactionRepository:
                 value = amount_by_category.get(transaction.category, 0) + transaction.amount
                 amount_by_category[transaction.category] = float('%.2f' % value)
 
+            elif transaction._raw_category not in ALL_VALID_EVENT_TYPES:
+                raise ValueError('A categoria em questão não existe no mapeamento!', transaction._raw_category)
+
         return amount_by_category
 
-    def get_in_account_transactions(self, start_date: datetime, end_date: datetime):
+    def get_in_transactions(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date,
-                                             custom_filters={'category': 'TransferInEvent'})
+                                             custom_filters={'category': {'$in': POSITIVE_CATEGORIES}})
 
         return transactions
 
-    def get_out_account_transactions(self, start_date: datetime, end_date: datetime):
+    def get_out_transactions(self, start_date: datetime, end_date: datetime):
         transactions = self.get_transactions(start_date=start_date, end_date=end_date,
-                                             custom_filters={'category': {'$in': ['BarcodePaymentEvent',
-                                                                                  'TransferOutEvent']}})
+                                             custom_filters={'category': {'$in': NEGATIVE_CATEGORIES}})
         return transactions
 
     def get_bill_amount(self, bill: str):

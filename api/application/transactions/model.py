@@ -91,15 +91,15 @@ class TransactionModel:
     def category(self):
         category = None
 
-        # pelo titulo da transação
-        category_by_trx_title = self._category_map_collection.find_one({'_id': self.name}) or {}
-        if category_by_trx_title and category_by_trx_title['value']:
-            category = category_by_trx_title['value']
-
         # pelo id da trx
         category_by_trx_id = self._category_map_collection.find_one({'_id': self.id}) or {}
         if category_by_trx_id and category_by_trx_id.get('value'):
             category = category_by_trx_id['value']
+
+        # pelo titulo da transação
+        category_by_trx_title = self._category_map_collection.find_one({'_id': self.name}) or {}
+        if category_by_trx_title and category_by_trx_title['value']:
+            category = category_by_trx_title['value']
 
         same_category_check = None
         if category_by_trx_title.get('value') and not category_by_trx_id.get('value'):
